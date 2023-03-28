@@ -824,6 +824,7 @@ FileFantastic.prototype.uploadCallback = function(fileIds=null) {
 }
 
 FileFantastic.prototype.uploadResponseCallback = function(response, fileIds) {
+    const single = fileIds?.constructor === string;
     fileIds = fileIds?.constructor === String ? [fileIds] : fileIds;
     response = response.constructor !== Array ? [response] : response;
     for (let fileResponse of response) {
