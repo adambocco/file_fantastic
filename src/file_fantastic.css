@@ -1,0 +1,289 @@
+.ff-input {
+    display: none;
+}
+.ff-input-container {
+    margin: 0.6em;
+    display: flex;
+}
+.ff-display-container {
+    display: flex;
+    flex-wrap: wrap;
+    position: relative;
+    width: fit-content;
+    height: fit-content;
+}
+.ff-img {
+    display: block;
+    margin:auto;
+    border: 1px solid #eee;
+    max-width: 400px;
+    max-height: 400px;
+}
+
+.ff-img.ff-img-expanded {
+    max-width: 600px;
+    max-height: 600px;
+}
+@keyframes spin {
+    to { -webkit-transform: rotate(360deg); }
+}
+@-webkit-keyframes spin {
+    to { -webkit-transform: rotate(360deg); }
+}
+
+
+.ff-file-preview-container.ff-img-preview-container {
+    display: block;
+    text-align: center;
+}
+.ff-open-cropper-button {
+    display:flex;
+    align-items: center;
+    justify-content: center;
+}
+.ff-remove-file-button {
+    flex: 1;
+    display:flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.ff-download-file-button {
+    flex: 1;
+    display:flex;
+    align-items: center;
+    justify-content: center;
+    background-color: rgb(41, 67, 139);
+    color: #eee;
+}
+.ff-copy-file-button {
+    flex: 1;
+    display:flex;
+    align-items: center;
+    justify-content: center;
+    background-color: rgb(44, 124, 91);
+    color: #eee;
+}
+
+.ff-remove-file-button {
+    flex: 1;
+    display:flex;
+    align-items: center;
+    justify-content: center;
+    background-color: rgb(122, 24, 24);
+    color: #eee;
+}
+.ff-open-cropper-button {
+    flex: 1;
+    display:flex;
+    align-items: center;
+    justify-content: center;
+    background-color: rgb(199, 190, 68);
+    color: #eee;
+}
+
+.ff-preview-container {
+    display: flex;
+}
+
+.ff-file-display {
+    display: inline-block;
+    padding: 0.6em;
+    font-size: 12px;
+    max-width: 250px;
+    word-wrap: anywhere;
+}
+.ff-filename-preview-container {
+    display: flex;
+}
+.ff-filename-preview {
+    display: flex;
+    align-items: center;
+    text-align: left;
+    padding: 0.15em 0.4em;
+    font-size: 14px;
+    word-wrap: anywhere;
+    max-width: 400px;
+}
+.ff-filename-input {
+    flex-grow: 1;
+}
+.ff-edit-filename-button {
+    background-color: cadetblue;
+    border-radius: 5px;
+    height: 20px;
+    width: 20px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    margin: 0.25em;
+    padding: 0.1em;
+    font-size: 12px;
+}
+
+
+.ff-filename-save-button {
+    background-color: rgb(48, 133, 86);
+    border-radius: 5px;
+    height: 20px;
+    width:20px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    margin: 0.25em;
+    padding: 0.1em;
+    font-size: 12px;
+    align-self: center;
+}
+
+.ff-filename-cancel-button {
+    background-color: maroon;
+    border-radius: 5px;
+    height: 20px;
+    width:20px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    margin: 0.25em;
+    padding: 0.1em;
+    font-size: 12px;
+    align-self: center;
+}
+
+
+.ff-input-button {
+	background: none;
+    background-color: rgb(52, 108, 160);
+	color: #eee;
+	border: none;
+	padding: 0.2em 0.4em;
+	font: inherit;
+	cursor: pointer;
+	outline: inherit;
+    border-radius: 0px;
+}
+
+.ff-cropper-toolbar {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-around;
+    flex-wrap: wrap;
+}
+.ff-crop-tool {
+    color: #eee;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    background-color:rgb(24, 63, 122);
+}
+.ff-tool-group {
+    display:flex;
+    flex-direction: row;
+    margin: 0.2em;
+}
+.ff-tool-group > .ff-crop-tool {
+    margin: 0.06em;
+}
+
+.ff-tool-group > .ff-crop-tool:first-child {
+    border-top-left-radius: 5px;
+    border-bottom-left-radius: 5px;
+    
+}
+.ff-tool-group > .ff-crop-tool:last-child {
+    border-top-right-radius: 5px;
+    border-bottom-right-radius: 5px;
+}
+
+.ff-toolbar-icon {
+    margin: 0.2em;
+    font-size: 10px;
+    padding: 5px;
+    text-align: center;
+}
+.ff-file-container {
+    margin: 0.2em 0.6em;
+    display: flex;
+    height:inherit;
+}
+.ff-img-container, .ff-audio-container, .ff-video-container {
+    flex-direction: column;
+}
+.ff-file-preview-container {
+    background-color: #eee;
+    display: inline-block;
+}
+.cropper-container {
+    margin: auto;
+}
+.ff-file-control-container {
+    display: flex;
+}
+.ff-file-control-container > div {
+    font-size: 12px;
+    padding: 4px;
+    cursor: pointer;
+}
+
+.ff-icon {
+    display: block !important;
+    padding: 0.1em;
+    margin: 0.1em;
+    color: #fff;
+    cursor: pointer;
+    width: 20%;
+    min-width: 15px;
+    text-align: center;
+}
+.ff-preview-files-container {
+    position: relative;
+}
+
+.ff-page-input {
+    margin: 0 0.1em;
+}
+.ff-paging-container {
+    display: flex;
+}
+.ff-paging-button {
+    border: none;
+    color: #eee;
+    background-color: rgb(52, 108, 160);
+}
+.ff-paging-left {
+    border-top-left-radius: 5px;
+    border-top-right-radius: 0;
+    border-bottom-left-radius: 5px;
+    border-bottom-right-radius: 0;
+    border-right: 1px solid #ccc;
+    margin: 0;
+}
+.ff-paging-right {
+    border-top-left-radius: 0;
+    border-top-right-radius: 5px;
+    border-bottom-left-radius: 0;
+    border-bottom-right-radius: 5px;
+    border-left: 1px solid #ccc;
+    margin: 0;
+}
+.ff-current-page {
+    padding: 4px;
+    font-size: 12px;
+    color: #eee;
+    background-color: rgb(90, 126, 161);
+    text-align: center;
+}
+.ff-audio {
+    display:flex;
+    width: 100%;
+}
+.ff-video {
+    width: 100%;
+    display: flex;
+    max-width: 600px;
+    max-height: 450px;
+}
