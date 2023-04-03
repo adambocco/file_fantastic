@@ -18,6 +18,7 @@ FileFantastic.prototype.initCropper = function(params) {
         movable: true,
         checkOrientation: false,
     };
+    this.removeCallbackOnEditExisting = params.removeCallbackOnEditExisting === undefined ? false : params.removeCallbackOnEditExisting;
     this.cropperToolGroups = {
         main: ['close', 'save', 'copy'],
         zoom: ['zoomOut', 'zoomIn'],
@@ -128,6 +129,17 @@ FileFantastic.prototype.saveCropper = function(fileId, copy=false) {
         }
         this.update();
     }, file.type)
+}
+
+FileFantastic.prototype.replaceFile = function(fileId) {
+    console.log("Replacing file");
+    const file = this.getFileById(fileId);
+    if (this.removeCallbackOnEditExisting && file.existing) {
+        this.removeCallback(fileId);
+    }
+    this.uploadCallback(fileId);
+    this.files.push(file);
+    this.removedFiles = this.removedFiles.filter(f => f.fileId !== fileId);
 }
 
 FileFantastic.prototype.undoCropper = function(fileId) {

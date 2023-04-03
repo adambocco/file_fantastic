@@ -3,7 +3,7 @@
 $clientDirectory = '/examples/uploads';
 $fileDirectory =  $_SERVER['DOCUMENT_ROOT'] . '/examples/uploads';
 
-$ffId = 'files';
+$ffId = 'ff_files';
 $json = json_decode(file_get_contents('php://input'), true);
 $uploadType = empty($json) ? 'formData' : 'json';
 $post = $uploadType === 'json' ? $json : $_POST;
@@ -20,8 +20,8 @@ if (!empty($_GET['upload'])) {
     $single = empty($postFiles[0]);
     $postFiles = $single ? array($postFiles) : $postFiles;
 
-    die("<pre>POST: " . print_r($_POST, true) . "\nJSON:" . print_r($json, true) . "\nFILES" . print_r($_FILES, true) . "\nfiles: " . print_r($files, true) . "\nRemoved Files: " . print_r($removedFiles, true) . "\nPOSTFILES: " . print_r($postFiles, true));
-
+    // die("<pre>POST: " . print_r($_POST, true) . "\nJSON:" . print_r($json, true) . "\nFILES" . print_r($_FILES, true) . "\nfiles: " . print_r($files, true) . "\nRemoved Files: " . print_r($removedFiles, true) . "\nPOSTFILES: " . print_r($postFiles, true));
+    
     foreach ($postFiles as $file) {
         $name = $file['name'];
         $fileId = $file['fileId'];
@@ -29,7 +29,7 @@ if (!empty($_GET['upload'])) {
         $filePath = $fileDirectory . '/' . $name;
 
         $fileResponse = null;
-
+        
         if (file_exists($filePath) && !empty($file['fileModified']) && !empty($file['existingUrl'])) {
             removeFile($file['existingUrl']['name']);
         }
@@ -39,15 +39,16 @@ if (!empty($_GET['upload'])) {
             $fileResponse = array('url' => $clientPath, 'fileId' => $fileId);
         }
 
-        if ($uploadType === 'json' && !empty($$file['dataUrl'])) {
+        if ($uploadType === 'json' && !empty($file['dataUrl'])) {
             $dataUrl = str_replace(' ', '+', substr($file['dataUrl'], strpos($file['dataUrl'], ',') + 1));
             $file = base64_decode($dataUrl);
-            file_put_contents($filePath, $file);
-            $fileResponse = array('url' => $clientPath, 'fileId' => $fileId);
+            if (file_put_contents($filePath, $file)) {
+                $fileResponse = array('url' => $clientPath, 'fileId' => $fileId);
+            }
         } elseif ($uploadType === 'formData') {
             if (!empty($files[$name])) {
                 if (move_uploaded_file($files[$name]['tmp_name'], $filePath)) {
-                   $fileResponse = array('url' => $clientPath, 'fileId' => $fileId);
+                    $fileResponse = array('url' => $clientPath, 'fileId' => $fileId);
                 }
             }
         }

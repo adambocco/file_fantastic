@@ -1,3 +1,8 @@
+<?php
+if (!empty($_GET['php_info'])) {
+    phpinfo();
+}
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -44,6 +49,14 @@
                 cursor: pointer;
                 margin: 1em;
             }
+            #upload_all_files {
+                padding: 0.2em 0.4em;
+                background-color: rgb(42, 42, 129);
+                color: #eee;
+                display: inline-block;
+                cursor: pointer;
+                margin: 1em;
+            }
 
             #loading-overlay {
                 position: fixed;
@@ -78,13 +91,8 @@
             
             #toaster {
                 position: fixed;
-                display: flex;
-                width: 100%;
-                width: -webkit-fill-available;
-                justify-content: center;
-                align-items: center;
                 bottom: 1em;
-                flex-direction: column;
+                right: 1em;
             }
 
             .toast {
@@ -108,7 +116,9 @@
             .warning {
                 background-color: #ddcc55;
             }
-
+            .info {
+                background-color: #2b8ee6;
+            }
             @-webkit-keyframes fadein {
                 from {
                     bottom: 0;
@@ -178,8 +188,9 @@
 
             </div>
             <div id="file_controls">
-                <div onclick="saveFiles()" id="save_files">Save</div>
+                <div onclick="uploadAllFiles()" id="upload_all_files">Upload All</div>
                 <div onclick="removeAllFiles()" id="remove_all_files">Remove All</div>
+                <div onclick="saveFiles()" id="save_files">Save</div>
             </div>
         </div>
         <div id="toaster"></div>
@@ -205,12 +216,12 @@
                 ?>");
                 let loaderToast = null;
 
-                const uploadIndividually = true;
+                const uploadIndividually = false;
                 const removeIndividually = false;
                 ff = new FileFantastic({
                     id: 'ff_files',
                     cropper: {
-                        uploadOnCrop: false
+                        uploadOnCrop: true
                     },
                     paging: {
                         perPage: 5,
@@ -226,8 +237,8 @@
                     uploadIndividually: uploadIndividually,
                     removeIndividually: removeIndividually,
                     removeOnClick: true,
-                    uploadCallbackUrl: '/examples/php/server.php?upload=1' + (uploadIndividually || (!removeCallbackUrl && removeOnClick) ? '&single=true' : ''),
-                    // removeCallbackUrl: '/examples/php/server.php?remove=1',
+                    uploadCallbackUrl: '/examples/php/server.php?upload=1',
+                    removeCallbackUrl: '/examples/php/server.php?remove=1',
                     saveFilenameCallbackUrl: '/examples/php/server.php?save_filename=1'
                 });
                 ff.loadingCallback = toggleLoadingScreen;
@@ -245,23 +256,18 @@
                     const doneBars = Array(isNaN(numDoneBars) || numDoneBars < 0 ? 0 : numDoneBars).fill('|').join('');
                     const numEmptyBars = totalBars - numDoneBars;
                     const emptyBars = Array(isNaN(numEmptyBars) || numEmptyBars < 0 ? 0 : numEmptyBars).fill('_').join('');
-                    loaderToast = loaderToast || toast( '<tt>[' + Array(totalBars).fill('_').join('') + '] 0%</tt>', 'danger', null);
+                    loaderToast = loaderToast || toast( '<tt>[' + Array(totalBars).fill('_').join('') + '] 0%</tt>', 'info', null);
                     loaderToast.innerHTML = '<tt>[' + doneBars + emptyBars + '] ' + percentDone + '%</tt>';
                     if (files === totalFiles) {
                         setTimeout(() => {
                             loaderToast.remove();
                             loaderToast = null;
-                        }, 200)
+                        }, 1500)
                     }
                 }
                 const fileUploader = document.getElementById('file_uploader');
                 const fileControls = document.getElementById('file_controls');
-                fileUploader.append(ff.pagingContainer, ff.displayContainer, ff.debugContainer);
-                fileControls.insertBefore(ff.inputButton, document.getElementById('save_files'));
-
-                const saveButton = document.getElementById('save_files');
-                saveButton.innerText = 'Save ' + (ff.uploadType === 'json' ? 'JSON' : 'Form Data');
-
+                fileUploader.append(ff.pagingContainer, ff.inputButton, ff.displayContainer, ff.debugContainer);
                 ff.update();
             })
 
@@ -271,6 +277,10 @@
 
             function removeAllFiles() {
                 ff.removeCallback();
+            }
+
+            function uploadAllFiles() {
+                ff.uploadCallback();
             }
 
             function toggleLoadingScreen(state=null) {
@@ -319,7 +329,5 @@
                 return toastEl;
             }
         </script>
-
-    
     </body>
 </html>

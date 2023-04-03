@@ -109,7 +109,14 @@ FileFantastic.prototype.updateDebugContainer = function() {
         maxFiles: createInput('maxFiles'),
         maxFileSize: createInput('maxFileSize'),
     }));
-
+    if (this.croppable) {
+        container.append(this.createDebugUl({
+            uploadOnCrop: createCheckbox('uploadOnCrop'),
+            cropperOptions: this.cropperOptions,
+            removeCallbackOnEditExisting: createCheckbox('removeCallbackOnEditExisting'),
+            cropperToolGroups: this.cropperToolGroups
+        }));
+    }
 
     const payloadButton = document.createElement('button');
     payloadButton.type = 'button';

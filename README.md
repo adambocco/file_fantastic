@@ -87,14 +87,14 @@ File Fantastic is a simple client-side JavaScript web file management library.
     this.id (file) = file (this will be parsed out to $_FILES in php),
   ```
 
-  **Multiple**: `<i>` is index of file such that in PHP, $_POST will be index array of files data
+  **Multiple**:
     `<this.id>` 
   ```
-    <i>[fileId] (string) = file ID to map non-individual response to correct file,
-    <i>[name] (string) = file name,
-    <i>[size] (number) = file size in bytes,
-    <i>[type] (string) = file Mime type,
-    <this.id>[<i>] (file) = file (this will be parsed out to $_FILES in php),
+    <file index>[fileId] (string) = file ID to map non-individual response to correct file,
+    <file index>[name] (string) = file name,
+    <file index>[size] (number) = file size in bytes,
+    <file index>[type] (string) = file Mime type,
+    <this.id>[file index] (file) = file (this will be parsed out to $_FILES in php),
   ```
 * ***removeCallback*** - (fileIds | null(default)) - Make remove request to `removeCallbackUrl` with removed files.
   * Payload Structure: `file.existingUrl` destructured.
@@ -116,3 +116,17 @@ File Fantastic is a simple client-side JavaScript web file management library.
 - Debug
 - Cropper.js
 
+# Examples:
+
+## PHP:
+
+### Dev Notes:
+- File uploads may fail due to maximum file/post data configuration set in your `php.ini` file:
+  - Check `phpinfo()` for the path to your `php.ini` file: `Loaded Configuration File`
+  - We're concerned with `max_file_uploads`, `post_max_size` (for data URLs), and `upload_max_filesize`.
+  - `upload_max_filesize` is the maximum size of any single file.
+  - `max_file_uploads` is the maximum number of files that can be uploaded.
+  - `post_max_size` is the maximum size of the entire request, including files.
+  ```
+    sed -i 's/upload_max_filesize = .*/upload_max_filesize = '<NEW MAX FILE SIZE>'/' /etc/php/7.4/cli/php.ini
+  ```

@@ -4,7 +4,6 @@ FileFantastic.prototype.initDirectories = function(params) {
 
     this.currentDirectory = params.currentDirectory || '';
     this.directories = params.directories || [];
-    // Gonna need files to store full path
 }
 
 FileFantastic.prototype.creatDirectoryNavigator = function(fileId) {
