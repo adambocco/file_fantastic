@@ -195,8 +195,8 @@ function FileFantastic(params) {
     this.files = [];
     this.id = params.id === undefined ? this.generateUID() : params.id;
     this.multiple = params.multiple === undefined ? false : params.multiple;
-    this.uploadType = ['json', 'formData'].includes(params.uploadType) ? params.uploadType : 'json';
-    this.uploadCallbackUrl = params.uploadCallbackUrl === undefined ? '' : params.uploadCallbackUrl; 
+    this.payloadType = ['json', 'formData'].includes(params.payloadType) ? params.payloadType : 'json';
+    this.uploadUrl = params.uploadUrl === undefined ? '' : params.uploadUrl; 
     this.uploadIndividually = params.uploadIndividually === undefined ? ! this.multiple : params.uploadIndividually;
     this.uploadOnInput = params.uploadOnInput === undefined ? true : params.uploadOnInput;
     this.progressCallback = params.progressCallback || (()=>{});
@@ -219,16 +219,17 @@ function FileFantastic(params) {
     this.showFilename = params.showFilename === undefined ? true : params.showFilename;
     this.maxFilenameLength = params.maxFilenameLength === undefined ? 240 : params.maxFilenameLength;
     this.removeable = params.removeable === undefined ? true : params.removeable === undefined;
-    this.removeCallbackUrl = params.removeCallbackUrl || '';
+    this.removeUrl = params.removeUrl || '';
     this.removedFiles = [];
     this.removeIndividually = params.removeIndividually === undefined ? true : params.removeIndividually;
     this.removeOnClick = params.removeOnClick === undefined ? false : params.removeOnClick;
+    this.removeOnEditExisting = params.removeOnEditExisting === undefined ? false : params.removeOnEditExisting
 
     this.resize = params.resize || false;
     this.resizeMaxWidth = params.resizeMaxWidth || 1632;
     this.resizeMaxHeight = params.resizeMaxHeight || 1224;
 
-    this.dropify = params.dropify === undefined ? false : params.dropify;
+    this.dropify = params.dropify === undefined ? true : params.dropify;
     this.alertCallback = params.alertCallback || (a => {alert(a.message)});
     this.loadingCallback = params.loadingCallback || (()=>{});
     this.alerts = []
@@ -242,15 +243,13 @@ function FileFantastic(params) {
         this.acceptedExtensions = params.acceptedExtensions.constructor === String ? params.acceptedExtensions.split(',').map(e => e.replace('.', '').trim().toLowerCase()) : params.acceptedExtensions;
     }
 
-    if (params.input) {
-        this.input = params.input.constructor === String ? document.getElementById(params.input) : params.input;
-    } else {
-        this.input = this.createInput();
-    }
+    this.input = this.createInput();
 
     this.inputButton = null;
-    if (this.dropify && params.input) {
-        $(this.input).dropify();
+    this.inputButtonText = '';
+    if (this.dropify) {
+        this.inputButtonText = params.inputButtonText === undefined ? 'Drag and drop files here or click to select files' : params.inputButtonText;
+        this.inputButton = this.createDropify();
     } else if (params.inputButton) {
         this.inputButton = params.inputButton.constructor === String ? document.getElementById(params.inputButton) : params.inputButton;
         this.inputButton.addEventListener('click', ev => {this.input.click()});
@@ -280,7 +279,9 @@ function FileFantastic(params) {
         }
     }
     this.loadExisting(this.existingUrls);
-    this.setInputOnChange();
+    this.input.addEventListener('change', () => {
+        this.fileInputCallback();
+    })
 
     // Plugins
     if (this.initCropper !== undefined && params.cropper) {
@@ -561,12 +562,12 @@ FileFantastic.prototype.saveFilename = function(fileId, newFilename) {
     }
     if (file.existing) {
         if (this.saveFilenameCallbackUrl) {
-            const payload = this.uploadType === 'json' ? {} : new FormData();
+            const payload = this.payloadType === 'json' ? {} : new FormData();
             this.addToPayload(payload, 'existingUrl', file.existingUrl);
             this.addToPayload(payload, 'originalName', file.originalName || file.name);
             this.addToPayload(payload, 'name', newFilename);
             this.addToPayload(payload, 'fileId', file.fileId);
-            this.doXhr(this.saveFilenameCallbackUrl, payload, response => {this.saveFilenameResponseCallback(fileId, newFilename, response)}, this.uploadType === 'json')
+            this.doXhr(this.saveFilenameCallbackUrl, payload, response => {this.saveFilenameResponseCallback(fileId, newFilename, response)}, this.payloadType === 'json')
         } else {
             file.filenameModified = true;
             file.originalName = file.originalName ? file.originalName : file.name;
@@ -613,7 +614,7 @@ FileFantastic.prototype.copyFile = function(fileId) {
         newFileObject.copied = true;
         newFileObject.copiedFromFileId = srcFileObject.fileId;
         let copyUploaded = false;
-        if (this.uploadType === 'json') {
+        if (this.payloadType === 'json') {
             if (srcFile.dataUrl) {
                 newFileObject.dataUrl = srcFile.dataUrl;
             } else {
@@ -622,14 +623,14 @@ FileFantastic.prototype.copyFile = function(fileId) {
                     const [dataUrl, fileId] = value;
                     newFileObject.dataUrl = dataUrl;
                     if (this.uploadOnInput) {
-                        this.uploadCallback(newFileObject.fileId);
+                        this.upload(newFileObject.fileId);
                     }
                 })
             }
         }
 
         if (this.uploadOnInput && !copyUploaded) {
-            this.uploadCallback(newFileObject.fileId);
+            this.upload(newFileObject.fileId);
         }
         this.files.sort(this.sortFilesCallback)
         if (this.paging) {
@@ -767,7 +768,7 @@ FileFantastic.prototype.createRemoveButton = function(fileId) {
     const removeButton = document.createElement('div');
     removeButton.classList.add('ff-remove-file-button');
     removeButton.id = 'ff-remove-file-button-' + fileId;
-    removeButton.addEventListener('click', ev => {this.removeCallback(fileId);})
+    removeButton.addEventListener('click', ev => {this.remove(fileId);})
     removeButton.appendChild(this.getIcon('remove'));
     return removeButton;
 }
@@ -786,7 +787,7 @@ FileFantastic.prototype.downloadFile = function(fileId) {
 }
 
 
-FileFantastic.prototype.uploadCallback = function(fileIds=null) {
+FileFantastic.prototype.upload = function(fileIds=null) {
     let filesToUpload = this.getFilesToUpload(fileIds);
     if (filesToUpload.length === 0) {
         this.alerts.push({message: 'No files to upload', type: 'warning'});
@@ -805,9 +806,9 @@ FileFantastic.prototype.uploadCallback = function(fileIds=null) {
 
         for (let i = 0; i < filesToUpload.length; i++) {
             const file = filesToUpload[i];
-            const payload = this.getUploadPayload(file.fileId);
+            const payload = this.getUploadPayload(file.fileId, true, true);
             this.progressCallback(runningIndex, totalIndex, runningSize, totalSize);
-            this.doXhr(this.uploadCallbackUrl, payload, response => {
+            this.doXhr(this.uploadUrl, payload, response => {
                 this.uploadResponseCallback(response, file.fileId);
                 runningSize += file.size;
                 runningIndex++;
@@ -815,15 +816,15 @@ FileFantastic.prototype.uploadCallback = function(fileIds=null) {
                 if (runningIndex >= totalIndex) {
                     this.loadingCallback(false);
                 }
-            }, this.uploadType === 'json')
+            }, this.payloadType === 'json')
         }
         
     } else {
-        const payload = this.getUploadPayload(fileIds);
-        this.doXhr(this.uploadCallbackUrl, payload, response => {
+        const payload = this.getUploadPayload(fileIds, true, true);
+        this.doXhr(this.uploadUrl, payload, response => {
             this.uploadResponseCallback(response, filesToUpload.map(f => f.fileId));
             this.loadingCallback(false);
-        }, this.uploadType === 'json')
+        }, this.payloadType === 'json')
     }    
 }
 
@@ -877,7 +878,7 @@ FileFantastic.prototype.saveResponseCallback = function(response, uploadedFileId
     }
 }
 
-FileFantastic.prototype.saveCallback = function(uploadFileIds=null, removeFileIds=null) {
+FileFantastic.prototype.save = function(uploadFileIds=null, removeFileIds=null) {
     let filesToUpload = this.getFilesToUpload(null);
     let filesToRemove = this.removedFiles;
     if (uploadFileIds) {
@@ -895,27 +896,26 @@ FileFantastic.prototype.saveCallback = function(uploadFileIds=null, removeFileId
     
     this.loadingCallback(true);
     if (!this.uploadIndividually && !this.removeIndividually) {
-        this.doXhr(this.uploadCallbackUrl, this.getDualPayload(filesToUpload.map(f => f.fileId), filesToRemove.map(f => f.fileId)), response => {
+        this.doXhr(this.uploadUrl, this.getDualPayload(filesToUpload.map(f => f.fileId), filesToRemove.map(f => f.fileId)), response => {
             this.saveResponseCallback(response, filesToUpload.map(f => f.fileId), filesToRemove.map(f => f.fileId));
             this.loadingCallback(false);
-        }, this.uploadType === 'json')
+        }, this.payloadType === 'json')
     } else {
-        this.uploadCallback(filesToUpload.map(f => f.fileId));
         const requestRemove = (requestFileIds, last) => {
             let payload = this.getRemovePayload(requestFileIds);
             if (!payload) {
                 return;
             }
 
-            if (!this.removeCallbackUrl) {
-                payload = this.addToPayload(this.uploadType === 'json' ? {} : new FormData(), 'removedFiles', payload);
+            if (!this.removeUrl) {
+                payload = this.addToPayload(this.payloadType === 'json' ? {} : new FormData(), 'removedFiles', payload);
             }
-            this.doXhr(this.removeCallbackUrl || this.uploadCallbackUrl, payload, response => {
+            this.doXhr(this.removeUrl || this.uploadUrl, payload, response => {
                 this.removeResponseCallback(response, requestFileIds)
                 if (last) {
                     this.loadingCallback(false);
                 }
-            }, this.uploadType === 'json')
+            }, this.payloadType === 'json')
         }
 
         if (this.removeIndividually) {
@@ -923,24 +923,25 @@ FileFantastic.prototype.saveCallback = function(uploadFileIds=null, removeFileId
         } else {
             requestRemove(filesToRemove.map(f => f.fileId), true);
         }
+        this.upload(filesToUpload.map(f => f.fileId));
     }
 }
 
-FileFantastic.prototype.getDualPayload = function(uploadFileIds=null, removeFileIds=null) {
-    const dualPayload = this.uploadType === 'json' ? {} : new FormData();
+FileFantastic.prototype.getDualPayload = function(uploadFileIds=null, removeFileIds=null, forceAll=false) {
+    const dualPayload = this.payloadType === 'json' ? {} : new FormData();
     
-    if (this.uploadType === 'json') {
-        const uploadPayload = this.getUploadPayload(uploadFileIds);
+    if (this.payloadType === 'json') {
+        const uploadPayload = this.getUploadPayload(uploadFileIds, true, true, forceAll);
         this.addToPayload(dualPayload, 'files', uploadPayload);
     } else {
-        const uploadPayloadData = this.getUploadPayload(uploadFileIds, true, false);
-        const uploadPayloadFiles = this.getUploadPayload(uploadFileIds, false, true);
+        const uploadPayloadData = this.getUploadPayload(uploadFileIds, true, false, forceAll);
+        const uploadPayloadFiles = this.getUploadPayload(uploadFileIds, false, true, forceAll);
         if (uploadPayloadFiles) {
             Array.from(uploadPayloadFiles.entries()).forEach(f => dualPayload.append(f[0], f[1], f[1].name));
         }
         this.addToPayload(dualPayload, 'files', uploadPayloadData);
     }
-    const removePayload = this.getRemovePayload(removeFileIds);
+    const removePayload = this.getRemovePayload(removeFileIds, forceAll);
     this.addToPayload(dualPayload, 'removedFiles', removePayload);
     return dualPayload;
 }
@@ -961,12 +962,10 @@ FileFantastic.prototype.addToPayload = function(payload, key, value, index=null,
                         } else if (key) {
                             subKey = key + '[' + subKey + ']';
                         }
-                        console.log("Add to payload recursive formdata")
                         this.addToPayload(payload, subKey, subValue, index, filename, '');
                     }
                 } else {
                     for (let subKey in value) {
-                        console.log("Add to payload recursive objwct")
                         const subValue = value[subKey];
                         this.addToPayload(payload, key, subValue, index, null, formDataWrapper + '[' + subKey + ']');
                     }
@@ -992,32 +991,32 @@ FileFantastic.prototype.addToPayload = function(payload, key, value, index=null,
     return payload;
 }
 
-
-
-FileFantastic.prototype.getFilesToUpload = function(fileIds=null) {
+FileFantastic.prototype.getFilesToUpload = function(fileIds=null, forceAll=false) {
     let filesToUpload = this.files;
     if (fileIds) {
         filesToUpload = fileIds.constructor === Array ? this.files.filter(v => fileIds.includes(v.fileId)) : [this.getFileById(fileIds)];
     }
-    return filesToUpload.filter(file => {
-        return !file.existing || file.fileModified || file.filenameModified;
-    })
+    if (forceAll) {
+        return filesToUpload;
+    } else {
+        return filesToUpload.filter(file => {
+            return !file.existing || file.fileModified || file.filenameModified;
+        })
+    }
 }
 
-FileFantastic.prototype.getUploadPayload = function(fileIds=null, addData=true, addFiles=true) {
-    const filesToUpload = this.getFilesToUpload(fileIds);
+FileFantastic.prototype.getUploadPayload = function(fileIds=null, addData=true, addFiles=true, forceAll=false) {
+    const filesToUpload = this.getFilesToUpload(fileIds, forceAll);
     const individual = fileIds?.constructor === String;
     
-    let payload = this.uploadType === 'json' ? (individual ? {} : Array(filesToUpload.length)) : new FormData();
+    let payload = this.payloadType === 'json' ? (individual ? {} : Array(filesToUpload.length)) : new FormData();
 
     let payloadIndex = individual ? null : 0;
     for (let i = 0; i < filesToUpload.length; i++) {
         let file = filesToUpload[i];
         if (addData) {
             this.addToPayload(payload, 'fileId', file.fileId, payloadIndex);
-            if (!file.existing || file.fileModified|| file.filenameMod) {
-                this.addToPayload(payload, 'name', file.name, payloadIndex);
-            }
+            this.addToPayload(payload, 'name', file.name, payloadIndex);
             
             if (!file.existing || file.fileModified) {
                 this.addToPayload(payload, 'size', file.size, payloadIndex);
@@ -1037,7 +1036,7 @@ FileFantastic.prototype.getUploadPayload = function(fileIds=null, addData=true, 
         }
         if (addFiles) {
             if (!file.existing || file.fileModified) {
-                if (this.uploadType === 'json') {
+                if (this.payloadType === 'json') {
                     this.addToPayload(payload, 'dataUrl', file.dataUrl, payloadIndex);
                 } else {
                     console.log("Payload index: ", payloadIndex)
@@ -1051,15 +1050,15 @@ FileFantastic.prototype.getUploadPayload = function(fileIds=null, addData=true, 
     return payload;
 }
 
-FileFantastic.prototype.getRemovePayload = function(fileIds=null) {
-    const files = fileIds === null ? this.removedFiles : this.files.concat(this.removedFiles);
+FileFantastic.prototype.getRemovePayload = function(fileIds=null, forceAll=false) {
+    const files = forceAll ? this.files.concat(this.removedFiles) : this.removedFiles;
     const individual = fileIds?.constructor === String;
     fileIds = individual ? [fileIds] : fileIds;
     const removedFiles = files.filter(rf => fileIds === null || fileIds.includes(rf.fileId));
     if (removedFiles.length === 0) {
         return null;
     }
-    const payload = this.uploadType === 'json' ? (individual ? {} : Array(removedFiles.length)) : new FormData();
+    const payload = this.payloadType === 'json' ? (individual ? {} : Array(removedFiles.length)) : new FormData();
     for (let i = 0; i < removedFiles.length; i++) {
         const removedFile = removedFiles[i];
         Object.entries(removedFile.existingUrl).forEach(e => {
@@ -1069,7 +1068,7 @@ FileFantastic.prototype.getRemovePayload = function(fileIds=null) {
     return payload;
 }
 
-FileFantastic.prototype.removeCallback = function(fileIds=null) {
+FileFantastic.prototype.remove = function(fileIds=null) {
     let filesToRemove = this.files;
     if (fileIds) {
         filesToRemove = filesToRemove.filter(v => fileIds.constructor === Array ? fileIds.includes(v.fileId) : fileIds === v.fileId);
@@ -1095,14 +1094,15 @@ FileFantastic.prototype.removeCallback = function(fileIds=null) {
         return;
     }
 
+    this.removedFiles = this.removedFiles.concat(filesToRemove);
     if (this.removeOnClick) {
         this.loadingCallback(true);
         const requestRemove = (requestFileIds, last) => {
             let payload = this.getRemovePayload(requestFileIds);
-            if (!this.removeCallbackUrl) {
-                payload = this.addToPayload(this.uploadType === 'json' ? {} : new FormData(), 'removedFiles', payload)
+            if (!this.removeUrl) {
+                payload = this.addToPayload(this.payloadType === 'json' ? {} : new FormData(), 'removedFiles', payload)
             }
-            this.doXhr(this.removeCallbackUrl || this.uploadCallbackUrl, payload, response => {
+            this.doXhr(this.removeUrl || this.uploadUrl, payload, response => {
                 this.removeResponseCallback(response, requestFileIds)
                 if (last) {
                     this.loadingCallback(false);
@@ -1116,7 +1116,7 @@ FileFantastic.prototype.removeCallback = function(fileIds=null) {
                         this.removeFile(f.fileId)
                     }
                 });
-            }, this.uploadType === 'json')
+            }, this.payloadType === 'json')
         }
 
         if (this.removeIndividually) {
@@ -1125,7 +1125,6 @@ FileFantastic.prototype.removeCallback = function(fileIds=null) {
             requestRemove(filesToRemove.map(f => f.fileId), true);
         }
     } else {
-        this.removedFiles = this.removedFiles.concat(filesToRemove);
         filesToRemove.forEach(f => this.removeFile(f.fileId));
     }
 }
@@ -1155,6 +1154,33 @@ FileFantastic.prototype.removeFile = function(fileId) {
     this.update();
 }
 
+FileFantastic.prototype.createDropify = function() {
+    const dropAreaElement = document.createElement('div');
+    dropAreaElement.classList.add('ff-dropify');
+    dropAreaElement.append(this.inputButtonText);
+
+    dropAreaElement.addEventListener('dragenter', ev => {
+        ev.preventDefault();
+        dropAreaElement.classList.add('ff-dropify-active');
+    });
+    dropAreaElement.addEventListener('dragover', ev => {
+        ev.preventDefault();
+        dropAreaElement.classList.add('ff-dropify-active');
+    });
+    dropAreaElement.addEventListener('dragleave', ev => {
+        dropAreaElement.classList.remove('dropify-active');
+    });
+    dropAreaElement.addEventListener('drop', ev => {
+        ev.preventDefault();
+        dropAreaElement.classList.remove('dropify-active');
+        this.input.files = ev.dataTransfer.files;
+    });
+    dropAreaElement.addEventListener('click', ev => {
+        this.input.click();
+    })
+    return dropAreaElement;
+}
+    
 FileFantastic.prototype.displayAlerts = function() {
     if (this.alertCallback) {
         for (let a of this.alerts) {
@@ -1165,20 +1191,16 @@ FileFantastic.prototype.displayAlerts = function() {
 }
 
 FileFantastic.prototype.cleanFilename = function(filename, uniqueCounter=1) {
-    console.log("Cleaning filename: ", filename)
-    const extension = filename.substr(filename.lastIndexOf('.')).toLowerCase().replaceAll(/[^A-Za-z0-9\-]/g, '');
-    console.log("extension: ", extension)
-    let name = filename.substr(0,filename.lastIndexOf('.'));
-    name = name.replaceAll(/\s/g, '-').replaceAll(/[^A-Za-z0-9\-]/g, '').replaceAll(/-+/g,"-").replaceAll(/-+$/g, '');
-    console.log("name1: ", name, name.length)
+    const isDotfile = filename.indexOf('.') === 0;
+    const extension = isDotfile ? '' : filename.substr(filename.lastIndexOf('.')).toLowerCase().replaceAll(/[^A-Za-z0-9\-]/g, '');
+    let name = isDotfile ? filename : filename.substr(0,filename.lastIndexOf('.'));
+    name = name.replaceAll(/\s/g, '-').replaceAll(/[^A-Za-z0-9\-\.]/g, '').replaceAll(/-+/g,"-").replaceAll(/-+$/g, '');
     if (name.length > this.maxFilenameLength) {
         name = name.substr(0, this.maxFilenameLength);
     }
-    console.log('name2', name)
     if (!name || uniqueCounter > 1) {
         name += uniqueCounter.toString();
     }
-    console.log("unique counter to string: ", uniqueCounter.toString(), uniqueCounter.toString().length)
     const newName = name + (extension ? '.' + extension : '');
     for (let file of this.files) {
         if (file.name === newName) {
@@ -1191,7 +1213,6 @@ FileFantastic.prototype.cleanFilename = function(filename, uniqueCounter=1) {
 FileFantastic.prototype.createInput = function () {
     const input = document.createElement('input');
     input.type = 'file';
-    input.id = this.inputId;
     input.name = 'ff-input';
     input.classList.add('ff-input', 'dropify');
 
@@ -1204,111 +1225,109 @@ FileFantastic.prototype.createInput = function () {
     return input;
 }
 
-FileFantastic.prototype.setInputOnChange = function(ev) {
-    this.input.addEventListener('change', () => {
-        if (!this.multiple) {
-            this.files = {};
-        }
+FileFantastic.prototype.fileInputCallback = function() {
+    if (!this.multiple) {
+        this.files = {};
+    }
+
+    const numFiles = this.input.files.length;
+
+    let numTooLarge = 0;
+    let numTooMany = 0;
+    let numWrongType = 0;
+    let numWrongExt = 0;
     
-        const numFiles = this.input.files.length;
-        let numTooLarge = 0;
-        let numTooMany = 0;
-        let numWrongType = 0;
-        let numWrongExt = 0;
-        
-        const filesAdded = [];
-        const dataUrlPromises = [];
-        for (let i = 0; i < numFiles; i++) {
-            if (this.files.length >= this.maxFiles) {
-                numTooMany += numFiles - i;
-                break;
-            }
-            const file = this.input.files[i];
-            const ext = file.name.split('.').pop().toLowerCase();
+    const filesAdded = [];
+    const dataUrlPromises = [];
+    for (let i = 0; i < numFiles; i++) {
+        if (this.files.length >= this.maxFiles) {
+            numTooMany += numFiles - i;
+            break;
+        }
+        const file = this.input.files.item(i);
+        const ext = file.name.indexOf('.') < 0 ? '' : file.name.split('.').pop().toLowerCase();
+
+        if (this.acceptedExtensions && ext && !this.acceptedExtensions.includes(ext)) {
+            numWrongExt++;
+            continue;
+        }
+        if (this.acceptedFileTypes && !this.acceptedFileTypes.includes(file.type)) {
+            numWrongType++;
+            continue;
+        }
+        if (this.resize) {
+            const dataUrlPromise = this.resizeImage(file, file => {
+                const fileObject = this.addFile(file);
+                fileObject.file = file;
+                filesAdded.push(fileObject);
+            }).then(resizedFile => {
+                if (this.payloadType === 'json') {
+                    const dataUrlPromise = this.blobToDataUrl(resizedFile, fileObject.fileId).then(value => {
+                        const [dataUrl, fileId] = value;
+                        fileObject.dataUrl = dataUrl;
+                    })
+                    return dataUrlPromise
+                }
+            });
+            dataUrlPromises.push(dataUrlPromise);
+            continue;
+        }
+        if (file.size > this.maxFileSize) {
+            numTooLarge++;
+            continue;
+        }
+        const fileObject = this.addFile(file);
+        filesAdded.push(fileObject);
+        if (this.payloadType === 'json') {
+            const dataUrlPromise = this.blobToDataUrl(file, fileObject.fileId).then(value => {
+                const [dataUrl, fileId] = value;
+                fileObject.dataUrl = dataUrl;
+            })
+            dataUrlPromises.push(dataUrlPromise);
+        }
+    }
     
-            if (this.acceptedExtensions && ext && !this.acceptedExtensions.includes(ext)) {
-                numWrongExt++;
-                continue;
-            }
-            if (this.acceptedFileTypes && !this.acceptedFileTypes.includes(file.type)) {
-                numWrongType++;
-                continue;
-            }
-            if (this.resize) {
-                this.resizeImage(file, file => {
-                    const fileObject = this.addFile(file);
-                    filesAdded.push(fileObject);
-                }).then(resizedFile => {
-                    if (this.uploadType === 'json') {
-                        const dataUrlPromise = this.blobToDataUrl(file, fileObject.fileId).then(value => {
-                            const [dataUrl, fileId] = value;
-                            fileObject.dataUrl = dataUrl;
-                        })
-                        dataUrlPromises.push(dataUrlPromise);
-                        this.update();
-                    }
-                });
-                continue;
-            }
-            if (file.size > this.maxFileSize) {
-                numTooLarge++;
-                continue;
-            }
-            const fileObject = this.addFile(file);
-            filesAdded.push(fileObject);
-            if (this.uploadType === 'json') {
-                const dataUrlPromise = this.blobToDataUrl(file, fileObject.fileId).then(value => {
-                    const [dataUrl, fileId] = value;
-                    fileObject.dataUrl = dataUrl;
-                })
-                dataUrlPromises.push(dataUrlPromise);
-            }
-        }
-        
-        if (numWrongExt > 0) {
-            this.alerts.push({message: numWrongExt + ' file(s) could not be uploaded because their extensions are not allowed. Allowed file extensions include: ' + this.acceptedExtensions.join(', '), type: 'warning'});
-        }
-        if (numWrongType > 0) {
-            this.alerts.push({message: numWrongType + ' file(s) could not be uploaded because their types are not allowed. Allowed file types include: ' + this.acceptedFileTypes.join(', '), type: 'warning'});
-        }
-        if (numTooMany > 0) {
-            this.alerts.push({message: numTooMany + ' file(s) could not be uploaded because only a maximum of ' + this.maxFiles + ' files may be uploaded', type: 'warning'});
-        }
-        if (numTooLarge > 0) {
-            const maxSizeMB = (this.maxFileSize / 1024 / 1024).toFixed(2) + 'MB';
-            this.alerts.push({message: numTooLarge + ' file(s) could not be uploaded because they exceed the maximum file size. Please ensure all files are smaller than ' + maxSizeMB + ' and try again', type: 'warning'});
-        }
-        this.files.sort(this.sortFilesCallback)
-        if (this.paging && filesAdded.length > 0) {
-            this.page = this.getPageByFileId(filesAdded[filesAdded.length - 1].fileId); 
-        }
-        this.input.value = '';
-    
-        if (this.uploadOnInput && filesAdded.length > 0) {
-            if (this.uploadType === 'json') {
-                Promise.all(dataUrlPromises).then(values => {
-                    this.uploadCallback(filesAdded.map(f => f.fileId));
-                })
-            } else {
-                this.uploadCallback(filesAdded.map(f => f.fileId));
-            }
+    if (numWrongExt > 0) {
+        this.alerts.push({message: numWrongExt + ' file(s) could not be uploaded because their extensions are not allowed. Allowed file extensions include: ' + this.acceptedExtensions.join(', '), type: 'warning'});
+    }
+    if (numWrongType > 0) {
+        this.alerts.push({message: numWrongType + ' file(s) could not be uploaded because their types are not allowed. Allowed file types include: ' + this.acceptedFileTypes.join(', '), type: 'warning'});
+    }
+    if (numTooMany > 0) {
+        this.alerts.push({message: numTooMany + ' file(s) could not be uploaded because only a maximum of ' + this.maxFiles + ' files may be uploaded', type: 'warning'});
+    }
+    if (numTooLarge > 0) {
+        const maxSizeMB = (this.maxFileSize / 1024 / 1024).toFixed(2) + 'MB';
+        this.alerts.push({message: numTooLarge + ' file(s) could not be uploaded because they exceed the maximum file size. Please ensure all files are smaller than ' + maxSizeMB + ' and try again', type: 'warning'});
+    }
+    this.files.sort(this.sortFilesCallback)
+    if (this.paging && filesAdded.length > 0) {
+        this.page = this.getPageByFileId(filesAdded[filesAdded.length - 1].fileId); 
+    }
+    this.input.value = '';
+
+    if (this.uploadOnInput && filesAdded.length > 0) {
+        if (this.payloadType === 'json') {
+            Promise.all(dataUrlPromises).then(values => {
+                this.upload(filesAdded.map(f => f.fileId));
+            })
         } else {
-            this.update();
+            this.upload(filesAdded.map(f => f.fileId));
         }
-    })
+    } else {
+        this.update();
+    }
 }
 
-
 FileFantastic.prototype.addFile = function(file) {
-    const extension = file.name.split('.').pop();
-    if (!file.type && this.extensionsToFileTypes[extension]) {
-        file.type = this.extensionsToFileTypes[extension];
-    }
+    const extension = file.name.indexOf('.') < 0 ? '' : file.name.split('.').pop();
+    const fileType = file.type || this.extensionsToFileTypes[extension] || 'application/octet-stream';
+    
     const fileObject = {
         file: file,
         size: file.size,
         name: this.cleanFilename(file.name),
-        type: file.type,
+        type: fileType,
         fileId: this.generateUID(),
         previewable: (this.previewImages && this.acceptedImagePreviewTypes.includes(file.type)) || 
             (this.previewAudio && this.acceptedAudioPreviewTypes.includes(file.type)) || 
@@ -1342,7 +1361,7 @@ FileFantastic.prototype.parseExistingUrlIntoFileObject = function(existingUrl, f
     }
 
     const ext = fileObject.name.split('.').pop().toLowerCase();
-    fileObject.type = existingUrl.type || fileObject.type || fileObject.file?.type || this.extensionsToFileTypes[ext] || '';
+    fileObject.type = existingUrl.type || fileObject.type || fileObject.file?.type || this.extensionsToFileTypes[ext] || 'application/octet-stream';
     fileObject.size = existingUrl.size || fileObject.size || fileObject.file?.size || 0;
     fileObject.previewable = (this.previewImages && this.acceptedImagePreviewTypes.includes(fileObject.type)) || 
         (this.previewAudio && this.acceptedAudioPreviewTypes.includes(fileObject.type)) || 

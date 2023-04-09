@@ -287,3 +287,25 @@
     max-width: 600px;
     max-height: 450px;
 }
+.ff-dropify {
+    border: 2px dashed #aaa;
+    padding: 1rem;
+    margin: 1rem;
+    text-align: center;
+    cursor: pointer;
+}
+  
+.ff-dropify:hover {
+    background-color: #f5f5f5;
+}
+  
+.ff-dropify-active {
+    background-color: #eee;
+}
+
+.ff-dropify-text {
+    font-size: 1.2rem;
+    font-weight: bold;
+    margin-top: 1rem;
+    cursor: pointer;
+}

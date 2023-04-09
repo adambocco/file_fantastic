@@ -237,8 +237,8 @@ if (!empty($_GET['php_info'])) {
                     uploadIndividually: uploadIndividually,
                     removeIndividually: removeIndividually,
                     removeOnClick: true,
-                    uploadCallbackUrl: '/examples/php/server.php?upload=1',
-                    removeCallbackUrl: '/examples/php/server.php?remove=1',
+                    uploadUrl: '/examples/php/server.php?upload=1',
+                    removeUrl: '/examples/php/server.php?remove=1',
                     saveFilenameCallbackUrl: '/examples/php/server.php?save_filename=1'
                 });
                 ff.loadingCallback = toggleLoadingScreen;
@@ -272,15 +272,15 @@ if (!empty($_GET['php_info'])) {
             })
 
             function saveFiles() {
-                ff.saveCallback();
+                ff.save();
             }
 
             function removeAllFiles() {
-                ff.removeCallback();
+                ff.remove();
             }
 
             function uploadAllFiles() {
-                ff.uploadCallback();
+                ff.upload();
             }
 
             function toggleLoadingScreen(state=null) {

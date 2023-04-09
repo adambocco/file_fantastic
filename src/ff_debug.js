@@ -83,7 +83,7 @@ FileFantastic.prototype.updateDebugContainer = function() {
 
     container.append(this.createDebugUl({
         id: this.id,
-        uploadType: createRadio('uploadType', ['json', 'formData']),
+        payloadType: createRadio('payloadType', ['json', 'formData']),
         existingUrls: this.existingUrls,
         multiple: createCheckbox('multiple'),
         uploadIndividually: createCheckbox('uploadIndividually'),
@@ -120,7 +120,7 @@ FileFantastic.prototype.updateDebugContainer = function() {
 
     const payloadButton = document.createElement('button');
     payloadButton.type = 'button';
-    payloadButton.append(document.createTextNode(this.uploadType === 'json' ? 'JSON Upload Payload' : 'Form Data Upload Payload'));
+    payloadButton.append(document.createTextNode(this.payloadType === 'json' ? 'JSON Upload Payload' : 'Form Data Upload Payload'));
 
     const debugUploadContainer = document.createElement('div');
     payloadButton.addEventListener('click', () => {
@@ -136,7 +136,7 @@ FileFantastic.prototype.updateDebugContainer = function() {
                 if (this.uploadIndividually) {
                     for (let file of filesToUpload) {
                         let payload = this.getUploadPayload(file.fileId);
-                        if (this.uploadType === 'formData') {
+                        if (this.payloadType === 'formData') {
                             payload = this.formDataToJson(payload);
                         }
                         const payloadContainer = document.createElement('div');
@@ -146,7 +146,7 @@ FileFantastic.prototype.updateDebugContainer = function() {
                     }
                 } else {
                     let payload = this.getUploadPayload();
-                    if (this.uploadType === 'formData') {
+                    if (this.payloadType === 'formData') {
                         payload = this.formDataToJson(payload);
                     }
                     const payloadLabel = document.createElement('h4');
@@ -161,7 +161,7 @@ FileFantastic.prototype.updateDebugContainer = function() {
 
     const removePayloadButton = document.createElement('button');
     removePayloadButton.type = 'button';
-    removePayloadButton.append(document.createTextNode(this.uploadType === 'json' ? 'JSON Remove Payload' : 'Form Data Remove Payload'));
+    removePayloadButton.append(document.createTextNode(this.payloadType === 'json' ? 'JSON Remove Payload' : 'Form Data Remove Payload'));
 
     const debugRemoveContainer = document.createElement('div');
     removePayloadButton.addEventListener('click', () => {
@@ -177,7 +177,7 @@ FileFantastic.prototype.updateDebugContainer = function() {
                 if (this.removeIndividually) {
                     for (let file of filesToRemove) {
                         let payload = this.getRemovePayload(file.fileId);
-                        if (this.uploadType === 'formData') {
+                        if (this.payloadType === 'formData') {
                             payload = this.formDataToJson(payload);
                         }
                         const payloadContainer = document.createElement('div');
@@ -187,7 +187,7 @@ FileFantastic.prototype.updateDebugContainer = function() {
                     }
                 } else {
                     let payload = this.getRemovePayload();
-                    if (this.uploadType === 'formData') {
+                    if (this.payloadType === 'formData') {
                         payload = this.formDataToJson(payload);
                     }
                     const payloadLabel = document.createElement('h4');
@@ -202,7 +202,7 @@ FileFantastic.prototype.updateDebugContainer = function() {
 
     const dualPayloadButton = document.createElement('button');
     dualPayloadButton.type = 'button';
-    dualPayloadButton.append(document.createTextNode(this.uploadType === 'json' ? 'JSON Dual Payload' : 'Form Data Dual Payload'));
+    dualPayloadButton.append(document.createTextNode(this.payloadType === 'json' ? 'JSON Dual Payload' : 'Form Data Dual Payload'));
 
     const debugDualContainer = document.createElement('div');
     dualPayloadButton.addEventListener('click', () => {
@@ -216,7 +216,7 @@ FileFantastic.prototype.updateDebugContainer = function() {
                 debugDualContainer.append('No Dual Payload Data');
             } else {
                 let payload = this.getDualPayload();
-                if (this.uploadType === 'formData') {
+                if (this.payloadType === 'formData') {
                     payload = this.formDataToJson(payload);
                 }
                 const payloadLabel = document.createElement('h4');
@@ -314,20 +314,20 @@ FileFantastic.prototype.createFileDebugContainer = function(fileId) {
     debugUploadContainer.id = 'ff-debug-payload-' + fileId;
     const loadUploadPayloadButton = document.createElement('button');
     loadUploadPayloadButton.type = 'button';
-    loadUploadPayloadButton.appendChild(document.createTextNode(this.uploadType === 'json' ? 'JSON Upload Payload' : 'Form Data Upload Payload'));
+    loadUploadPayloadButton.appendChild(document.createTextNode(this.payloadType === 'json' ? 'JSON Upload Payload' : 'Form Data Upload Payload'));
     loadUploadPayloadButton.addEventListener('click', ev => {
         if (debugUploadContainer.firstChild) {
             while (debugUploadContainer.firstChild) {
                 debugUploadContainer.firstChild.remove();
             }
         } else {
-            let payload = this.getUploadPayload(fileId);
+            let payload = this.getUploadPayload(fileId, true, true, true);
             if (!payload || (payload.constructor === Array && payload.length === 0)) {
                 const emptyText = payload?.constructor === Array ? 'Empty Array' : 'No Payload Data'
                 debugUploadContainer.appendChild(document.createTextNode(emptyText));
                 return;
             }
-            if (this.uploadType === 'formData') {
+            if (this.payloadType === 'formData') {
                 payload = this.formDataToJson(payload);
             }
             debugUploadContainer.appendChild(this.createDebugUl(payload));
@@ -339,19 +339,19 @@ FileFantastic.prototype.createFileDebugContainer = function(fileId) {
     debugRemoveContainer.id = 'ff-debug-payload-' + fileId;
     const loadRemovePayloadButton = document.createElement('button');
     loadRemovePayloadButton.type = 'button';
-    loadRemovePayloadButton.appendChild(document.createTextNode(this.uploadType === 'json' ? 'JSON Remove Payload' : 'Form Data Remove Payload'));
+    loadRemovePayloadButton.appendChild(document.createTextNode(this.payloadType === 'json' ? 'JSON Remove Payload' : 'Form Data Remove Payload'));
     loadRemovePayloadButton.addEventListener('click', ev => {
         if (debugRemoveContainer.firstChild) {
             while (debugRemoveContainer.firstChild) {
                 debugRemoveContainer.firstChild.remove();
             }
         } else {
-            let removePayload = this.getRemovePayload(fileId);
+            let removePayload = this.getRemovePayload(fileId, true);
             if (!removePayload || (removePayload.constructor === Array && removePayload.length === 0)) {
                 debugRemoveContainer.appendChild(document.createTextNode('No Payload Data'));
                 return;
             }
-            if (this.uploadType === 'formData') {
+            if (this.payloadType === 'formData') {
                 removePayload = this.formDataToJson(removePayload);
             }
             debugRemoveContainer.appendChild(this.createDebugUl(removePayload));

@@ -18,7 +18,6 @@ FileFantastic.prototype.initCropper = function(params) {
         movable: true,
         checkOrientation: false,
     };
-    this.removeCallbackOnEditExisting = params.removeCallbackOnEditExisting === undefined ? false : params.removeCallbackOnEditExisting;
     this.cropperToolGroups = {
         main: ['close', 'save', 'copy'],
         zoom: ['zoomOut', 'zoomIn'],
@@ -102,6 +101,10 @@ FileFantastic.prototype.saveCropper = function(fileId, copy=false) {
         if (copy) {
             this.copyFile(fileId);
         }
+        if (file.existing) {
+            this.removedFiles.push(file);
+        }
+        
         if (file.file) {
             file.originalFile = file.file;
         }
@@ -112,6 +115,7 @@ FileFantastic.prototype.saveCropper = function(fileId, copy=false) {
         file.file = new File([blob], file.name, {type: file.type, lastModified:new Date().getTime()});
         file.size = file.file.size;
         file.objectUrl = this.blobToObjectUrl(file.file);
+
         img.src = file.objectUrl;
         
         if (this.uploadType === 'json' || this.dataUrl) {
@@ -119,23 +123,22 @@ FileFantastic.prototype.saveCropper = function(fileId, copy=false) {
                 const dataUrl = values[0];
                 file.dataUrl = dataUrl;
                 if (this.uploadOnCrop) {
-                    this.replaceFile(fileId);
+                    this.save(fileId, fileId);
                 }
                 this.update();
             })
             return;
         } else if (this.uploadOnCrop) {
-            this.replaceFile(fileId);
+            this.save(fileId, fileId);
+            this.update();
         }
-        this.update();
     }, file.type)
 }
 
 FileFantastic.prototype.replaceFile = function(fileId) {
-    console.log("Replacing file");
     const file = this.getFileById(fileId);
-    if (this.removeCallbackOnEditExisting && file.existing) {
-        this.removeCallback(fileId);
+    if (this.removeOnEditExisting && file.existing) {
+        this.remove(fileId);
     }
     this.uploadCallback(fileId);
     this.files.push(file);
