@@ -30,7 +30,7 @@ if (!empty($_GET['upload'])) {
     $single = empty($postFiles[0]);
     $postFiles = $single ? array($postFiles) : $postFiles;
 
-    die("<pre>POST: " . print_r($_POST, true) . "\nJSON:" . print_r($json, true) . "\nFILES" . print_r($_FILES, true) . "\nfiles: " . print_r($files, true) . "\nRemoved Files: " . print_r($removedFiles, true) . "\nPOSTFILES: " . print_r($postFiles, true));
+    // die("<pre>POST: " . print_r($_POST, true) . "\nJSON:" . print_r($json, true) . "\nFILES" . print_r($_FILES, true) . "\nfiles: " . print_r($files, true) . "\nRemoved Files: " . print_r($removedFiles, true) . "\nPOSTFILES: " . print_r($postFiles, true));
     
     foreach ($postFiles as $file) {
         $name = $file['name'];

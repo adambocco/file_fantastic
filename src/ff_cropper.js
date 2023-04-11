@@ -1,7 +1,7 @@
 
 FileFantastic.prototype.initCropper = function(params) {
     this.croppable = true;
-    this.uploadOnCrop = params.uploadOnCrop === undefined ? true : params.uploadOnCrop;
+    this.saveOnCrop = params.saveOnCrop === undefined ? true : params.saveOnCrop;
 
     this.cropperOptions = params.cropperOptions || {
         aspectRatio: NaN,
@@ -118,31 +118,21 @@ FileFantastic.prototype.saveCropper = function(fileId, copy=false) {
 
         img.src = file.objectUrl;
         
-        if (this.uploadType === 'json' || this.dataUrl) {
+        if (this.payloadType === 'json' || this.dataUrl) {
             this.blobToDataUrl(file.file, fileId).then(values => {
                 const dataUrl = values[0];
                 file.dataUrl = dataUrl;
-                if (this.uploadOnCrop) {
+                if (this.saveOnCrop) {
                     this.save(fileId, fileId);
                 }
                 this.update();
             })
             return;
-        } else if (this.uploadOnCrop) {
+        } else if (this.saveOnCrop) {
             this.save(fileId, fileId);
             this.update();
         }
     }, file.type)
-}
-
-FileFantastic.prototype.replaceFile = function(fileId) {
-    const file = this.getFileById(fileId);
-    if (this.removeOnEditExisting && file.existing) {
-        this.remove(fileId);
-    }
-    this.uploadCallback(fileId);
-    this.files.push(file);
-    this.removedFiles = this.removedFiles.filter(f => f.fileId !== fileId);
 }
 
 FileFantastic.prototype.undoCropper = function(fileId) {
@@ -212,7 +202,7 @@ FileFantastic.prototype.createCropperToolbar = function(fileId) {
         for (let action of toolGroup) {
             buttonGroup.appendChild(this.createCropperToolbarButton(fileId, action));
         }
-        if (toolGroupName === 'main' && file.cropped && !this.uploadOnCrop) {
+        if (toolGroupName === 'main' && file.cropped && !this.saveOnCrop) {
             buttonGroup.appendChild(this.createCropperToolbarButton(fileId, 'undo'));
         }
         container.appendChild(buttonGroup);

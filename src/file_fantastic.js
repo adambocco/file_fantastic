@@ -215,7 +215,7 @@ function FileFantastic(params) {
     this.copyable = params.copyable === undefined ? true : params.copyable;
     this.downloadable = params.downloadable === undefined ? true : params.downloadable;
     this.editableFilename = params.editableFilename === undefined ? true : params.editableFilename;
-    this.saveFilenameCallbackUrl = params.saveFilenameCallbackUrl === undefined ? '' : params.saveFilenameCallbackUrl;
+    this.saveFilenameUrl = params.saveFilenameUrl === undefined ? '' : params.saveFilenameUrl;
     this.showFilename = params.showFilename === undefined ? true : params.showFilename;
     this.maxFilenameLength = params.maxFilenameLength === undefined ? 240 : params.maxFilenameLength;
     this.removeable = params.removeable === undefined ? true : params.removeable === undefined;
@@ -223,7 +223,6 @@ function FileFantastic(params) {
     this.removedFiles = [];
     this.removeIndividually = params.removeIndividually === undefined ? true : params.removeIndividually;
     this.removeOnClick = params.removeOnClick === undefined ? false : params.removeOnClick;
-    this.removeOnEditExisting = params.removeOnEditExisting === undefined ? false : params.removeOnEditExisting
 
     this.resize = params.resize || false;
     this.resizeMaxWidth = params.resizeMaxWidth || 1632;
@@ -400,7 +399,7 @@ FileFantastic.prototype.update = function() {
 FileFantastic.prototype.getIcon = function(key) {
     const icon = document.createElement('div');
     if (!this.icons[key] && key.indexOf(':') === -1) {
-        console.log('Icon does not exist for ', key, ' : ', this.iconType);
+        console.warning('Icon does not exist for ', key, ' : ', this.iconType);
         icon.appendChild(document.createTextNode(key.charAt(0).toUpperCase() + key.slice(1)));
         return icon;
     }
@@ -553,7 +552,7 @@ FileFantastic.prototype.createFilenamePreview = function(fileId) {
 FileFantastic.prototype.saveFilename = function(fileId, newFilename) {
     const file = this.getFileById(fileId);
     const extension = file.name.split('.').pop();
-    if (extension && newFilename.indexOf('.' + extension) !== newFilename.length - extension.length) {
+    if (extension && newFilename.indexOf('.') !== 0) {
         newFilename = newFilename.trim() + '.' + extension;
     }
     newFilename = this.cleanFilename(newFilename);
@@ -561,17 +560,16 @@ FileFantastic.prototype.saveFilename = function(fileId, newFilename) {
         return;
     }
     if (file.existing) {
-        if (this.saveFilenameCallbackUrl) {
+        file.filenameModified = true;
+        file.originalName = file.originalName ? file.originalName : file.name;
+        file.name = newFilename;
+        if (this.saveFilenameUrl) {
             const payload = this.payloadType === 'json' ? {} : new FormData();
             this.addToPayload(payload, 'existingUrl', file.existingUrl);
             this.addToPayload(payload, 'originalName', file.originalName || file.name);
             this.addToPayload(payload, 'name', newFilename);
             this.addToPayload(payload, 'fileId', file.fileId);
-            this.doXhr(this.saveFilenameCallbackUrl, payload, response => {this.saveFilenameResponseCallback(fileId, newFilename, response)}, this.payloadType === 'json')
-        } else {
-            file.filenameModified = true;
-            file.originalName = file.originalName ? file.originalName : file.name;
-            file.name = newFilename;
+            this.doXhr(this.saveFilenameUrl, payload, response => {this.saveFilenameResponseCallback(fileId, newFilename, response)}, this.payloadType === 'json')
         }
     } else {
         file.name = newFilename;
@@ -842,7 +840,6 @@ FileFantastic.prototype.uploadResponseCallback = function(response, fileIds) {
         }
         const file = this.getFileById(fileId);
         if (fileResponse.existingUrl || fileResponse.url || fileResponse.constructor === String) {
-            console.log("OKAY??? this is my file Response: ", fileResponse);
             const existingUrlResponse = fileResponse.existingUrl || fileResponse.url || fileResponse;
             const existingUrl = existingUrlResponse.constructor === String ? {url: existingUrlResponse} : existingUrlResponse;
             file.name = null;
@@ -850,7 +847,7 @@ FileFantastic.prototype.uploadResponseCallback = function(response, fileIds) {
             uploadedFileIds.push(fileId);
         }
     }
-    console.log(this.files.map(f => f.name))
+
     const failedFileIds = fileIds.filter(value => !uploadedFileIds.includes(value));
     if (failedFileIds.length > 0) {
         if (single) {
@@ -1039,7 +1036,6 @@ FileFantastic.prototype.getUploadPayload = function(fileIds=null, addData=true, 
                 if (this.payloadType === 'json') {
                     this.addToPayload(payload, 'dataUrl', file.dataUrl, payloadIndex);
                 } else {
-                    console.log("Payload index: ", payloadIndex)
                     this.addToPayload(payload, this.id, file.file, payloadIndex, file.name);
                 }
             }
@@ -1333,7 +1329,9 @@ FileFantastic.prototype.addFile = function(file) {
             (this.previewAudio && this.acceptedAudioPreviewTypes.includes(file.type)) || 
             (this.previewVideo && this.acceptedVideoPreviewTypes.includes(file.type))
     }
+
     this.files.push(fileObject);
+    this.input.dispatchEvent(new CustomEvent('added', { detail: fileObject.fileId }));
     return fileObject;
 }
 
@@ -1399,7 +1397,7 @@ FileFantastic.prototype.urlToBlob = function(url, extra='') {
             resolve([xhr.response, extra]);
         };
         xhr.onerror = err => {
-            console.log("Error converting object URL to blob:  ", err);
+            console.error("Error converting object URL to blob:  ", err);
             reject([err, url]);
         }
         xhr.send();
@@ -1424,7 +1422,7 @@ FileFantastic.prototype.doXhr = function(url, payload, cb, json=false) {
         cb(jsonResponse ? jsonResponse : rawResponse);
     }
     xhr.onerror = err => {
-        console.log("XML http request error", err);
+        console.error("XML http request error", err);
         cb(null);
     }
     xhr.send(payload);

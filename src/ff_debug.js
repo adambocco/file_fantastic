@@ -103,17 +103,16 @@ FileFantastic.prototype.updateDebugContainer = function() {
         resize: createCheckbox('resize'),
         dropify: createCheckbox('dropify'),
         iconType: createInput('iconType'),
-        uploadCallbackUrl: createInput('uploadCallbackUrl'),
-        removeCallbackUrl: createInput('removeCallbackUrl'),
-        removeCallbackUrl: createInput('saveFilenameCallbackUrl'),
+        uploadUrl: createInput('uploadUrl'),
+        removeUrl: createInput('removeUrl'),
+        removeUrl: createInput('saveFilenameUrl'),
         maxFiles: createInput('maxFiles'),
         maxFileSize: createInput('maxFileSize'),
     }));
     if (this.croppable) {
         container.append(this.createDebugUl({
-            uploadOnCrop: createCheckbox('uploadOnCrop'),
+            saveOnCrop: createCheckbox('saveOnCrop'),
             cropperOptions: this.cropperOptions,
-            removeCallbackOnEditExisting: createCheckbox('removeCallbackOnEditExisting'),
             cropperToolGroups: this.cropperToolGroups
         }));
     }

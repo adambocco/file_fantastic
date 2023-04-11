@@ -30,7 +30,7 @@ FileFantastic.prototype.createPageLeftButton = function() {
     leftButton.classList.add('ff-paging-button', 'ff-paging-left');
     leftButton.id = 'ff-paging-left-' + this.id;
     leftButton.addEventListener('click', ev => {this.pageLeftCallback()});
-    leftButton.appendChild(this.getIcon('leftChevron'));
+    leftButton.append(this.getIcon('leftChevron'));
     return leftButton;
 }
 
@@ -46,7 +46,7 @@ FileFantastic.prototype.createPageRightButton = function() {
     rightButton.classList.add('ff-paging-button', 'ff-paging-right');
     rightButton.id = 'ff-paging-right-' + this.id;
     rightButton.addEventListener('click', ev => {this.pageRightCallback()})
-    rightButton.appendChild(this.getIcon('rightChevron'));
+    rightButton.append(this.getIcon('rightChevron'));
     return rightButton;
 }
 
@@ -57,18 +57,30 @@ FileFantastic.prototype.createPageInput = function() {
     input.id = 'ff-page-input-' + this.id;
     input.style.width = Math.max(10, 6*Math.ceil(this.files.length / this.perPage)) + 'px';
     input.value = this.page;
-    input.addEventListener('focusout', ev => {
-        const totalPages = Math.ceil(this.files.length / this.perPage);
-        const pageInt = parseInt(input.value);
-        if (pageInt > 0 && pageInt <= totalPages) {
-            this.page = pageInt;
-            input.value = pageInt;
-            this.update();
-        } else {
-            input.value = this.page;
+
+    input.addEventListener('keyup', ev => {
+        if (ev.key === 'Enter') {
+            this.goToPage(input.value);
         }
+    });
+
+    input.addEventListener('focusout', ev => {
+        this.goToPage(input.value);
     })
     return input;
+}
+
+FileFantastic.prototype.goToPage = function(page) {
+    const totalPages = Math.ceil(this.files.length / this.perPage);
+    const pageInt = Math.floor(page);
+    if (pageInt > 0 && pageInt <= totalPages) {
+        this.page = pageInt;
+        this.pagingInput.value = pageInt;
+        this.update();
+        this.pagingInput.focus();
+    } else {
+        this.pagingInput.value = this.page;
+    }
 }
 
 FileFantastic.prototype.getCurrentPageFiles = function() {
@@ -89,7 +101,7 @@ FileFantastic.prototype.pageDisplayCallback = function() {
     let currentPageDisplay = document.getElementById('ff-current-page-' + this.id);
     if (!currentPageDisplay) {
         currentPageDisplay = this.createCurrentPageDisplay();
-        this.pagingContainer.appendChild(currentPageDisplay);
+        this.pagingContainer.append(currentPageDisplay);
     }
     if (this.hidePagingWhenSinglePage) {
         this.toggleDisplayed(currentPageDisplay, totalPages > 1)
@@ -106,27 +118,33 @@ FileFantastic.prototype.pageDisplayCallback = function() {
         existingLeftButton.remove();
     }
 
-    while (currentPageDisplay.firstChild) {
-        currentPageDisplay.firstChild.remove();
+    for (let child of Array.from(currentPageDisplay.children)) {
+        if (child !== this.pagingInput) {
+            currentPageDisplay.removeChild(child);
+        }
     }
 
     const pageNumberDisplay = document.createElement('span');
-    if (this.showPageInput && totalPages > 1) {
-        currentPageDisplay.appendChild(this.createPageInput());
-        pageNumberDisplay.appendChild(document.createTextNode('/' + totalPages));
+    if (this.showPageInput && !this.pagingInput) {
+        this.pagingInput = this.createPageInput();
+        currentPageDisplay.append(this.pagingInput);
+    } 
+    
+    if (!this.showPageInput) {
+        pageNumberDisplay.append(totalPages > 0 ? this.page : 0 + '/' + totalPages);
     } else {
-        pageNumberDisplay.appendChild(document.createTextNode(totalPages > 0 ? this.page : 0 + '/' + totalPages));
+        pageNumberDisplay.append('/' + totalPages);
     }
-    currentPageDisplay.appendChild(pageNumberDisplay);
+    currentPageDisplay.append(pageNumberDisplay);
     const pageRangeDisplay = document.createElement('div');
     let pageHigh = Math.min(this.perPage*this.page, this.files.length);
     let pageLow = pageHigh > 0 ? ((this.perPage*(this.page-1))+1) : 0;
-    pageRangeDisplay.appendChild(document.createTextNode(pageLow + '-' + pageHigh + ' of ' + (this.files.length)));
-    currentPageDisplay.appendChild(pageRangeDisplay)
+    pageRangeDisplay.append(pageLow + '-' + pageHigh + ' of ' + (this.files.length));
+    currentPageDisplay.append(pageRangeDisplay)
 
     if (this.page < totalPages) {
         if (!existingRightButton) {
-            this.pagingContainer.appendChild(this.createPageRightButton());
+            this.pagingContainer.append(this.createPageRightButton());
         } 
     } else if (existingRightButton) {
         existingRightButton.remove();

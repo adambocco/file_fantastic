@@ -8,7 +8,7 @@ This library can provide a lightweight file management framework for some of the
 - Uploading files with the ability to modify, copy, replace, and remove them.
 - Multiple file uploader instances that can be granularly configured for usage in complex forms such as in a CMS.
 - Manage subset of a file system and view many files using `Paging` and `Directories` plugin.
-- File syncing between when handling multiple files being modified.
+- File syncing client and server when handling multiple files being modified, added, and removed.
 
 # Features
 
@@ -25,7 +25,6 @@ This library can provide a lightweight file management framework for some of the
 
 ## Table of Contents
 
-- [Installation](#installation)
 - [Setup](#setup)
 - [Options](#options)
 - [Callbacks](#callbacks)
@@ -33,8 +32,9 @@ This library can provide a lightweight file management framework for some of the
 - [Methods](#methods)
 - [Plugins](#plugins)
 - [Examples](#examples)
+- [Notes](#notes)
 
-# Installation
+# Setup
 
 
 # Options
@@ -67,7 +67,7 @@ This library can provide a lightweight file management framework for some of the
 ## **uploadOnInput**  
 **Type:** `Boolean`  
 **Default:** `true`  
-**Usage:** Make upload request automatically when file input change event triggered.  
+**Usage:** Make upload request automatically when file input change event triggered or a file is copied (`copyFile` or cropper `saveCropper` with true as the 2nd argument).  
   
 ## **previewable**  
 **Type:** `Boolean`  
@@ -189,7 +189,7 @@ This library can provide a lightweight file management framework for some of the
 **Default:** `''`  
 **Usage:** URL used for `remove` OR `save` request.  
   
-## **saveFilenameCallbackUrl**  
+## **saveFilenameUrl**  
 **Type:** `String`  
 **Default:** `''`  
 **Usage:** URL used for `saveFilename` request.  
@@ -204,13 +204,23 @@ This library can provide a lightweight file management framework for some of the
 ## **loadingCallback**  
 **Type:** `function(loading: Boolean)`  
 **Default:** `() => {}`  
-**Usage:** `Create a loading screen while making requests.  
+**Usage:** Create a loading screen while making requests.  
 
 ## **progressCallback**  
 **Type:** `function({ runningIndex: Number, finalIndex: Number, runningSize: Number, totalSize: Number })`  
 **Default:** `() => {}`  
-**Usage:** `Create a progress bar while making multiple requests (*uploadIndividually* and/or *removeIndividually*)  
+**Usage:** Create a progress bar while making multiple requests (*uploadIndividually* and/or *removeIndividually*)  
   
+# Events  
+
+**Note:** Events fired by File Fantastic behave the same as standard events. Each event is triggered on the file input element (accessible via `this.input`). Arguments are accessible within the event.detail object.
+
+## **added**  
+**Payload:**  
+- `fileIds` - The fileId of the added file. 
+  - Type: `String`
+**Usage:** Triggered each time a new file is added whether it is via the file input, a file is copied, or added programatiicaly via `addFile`. 
+
 # Methods  
 
 ## **upload**  
@@ -619,10 +629,27 @@ This library can provide a lightweight file management framework for some of the
   )
   ```
 
+# Plugins
 
-# Plugins & Extensions
+**Usage:** Add parameters as object on base configuration object.  
+
+Example using `Paging` and `Cropper`:  
+
+```
+    ff = new FileFantastic({
+        multiple: true,
+        cropper: {
+            saveOnCrop: true,
+        },
+        paging: {
+            perPage: 5,
+            hideDisplayWhenSinglePage: false,
+        }
+    })
+```
+
 ## Paging
-- Adds simple pagination feature.
+- Pagination for multiple files.
 - Parameters:
   - **perPage:** Maximum files per page
     - Type: `Number`
@@ -634,13 +661,45 @@ This library can provide a lightweight file management framework for some of the
     - Type: `String | HTMLElement | null`
     - Default: `HTMLDivElement`
   - **showPageInput:** If true, the part of the widget showing the current page will be an input element that navigates to the page on focusout or enter.
-    - Type: `
+    - Type: `Boolean`
+    - Default: `true`
+
 ## Directories
+- Coming soon
+
 ## Debug
 - Provides tools for viewing and modifying configuration options, request payloads, and other attributes on the instance and its files.
 - Useful for development and building a backend while being able to easily view payload structure on different events.
+
 ## Cropper.js
-- Requires [Cropper.js](https://github.com/fengyuanchen/cropperjs)
+- Integration for [Cropper.js](https://github.com/fengyuanchen/cropperjs)
+- Parameters:
+  - **saveOnCrop:** Maximum files per page
+    - Type: `Number`
+    - Default: `10`
+  - **cropperOptions:** Configuration object used to create Cropper.js instance.
+    - Type: `Object`
+    - Default: 
+      ```
+      {
+        aspectRatio: NaN,
+        viewMode: 0,
+        dragMode: false,
+        zoomOnWheel: false,
+        autoCropArea: .8,
+        strict: false,
+        guides: false,
+        highlight: false,
+        dragCrop: true,
+        cropBoxMovable: true,
+        cropBoxResizable: true,
+        movable: true,
+        checkOrientation: false,
+      }
+      ```
+  - **cropperAspectRatios:** Aspect ratios options that show as buttons when the cropper is open. Use `0:0` for free.
+    - Type: `String[]`
+    - Default: `['4:3', '16:9', '0:0']`
 
 # Examples:
 

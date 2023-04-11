@@ -227,7 +227,7 @@ if (!empty($_GET['php_info'])) {
                         perPage: 5,
                         hideDisplayWhenSinglePage: false,
                     },
-                    debug: {},
+                    // debug: {},
                     iconType: 'fa',
                     multiple: true,
                     existingUrls: existingUrls,
@@ -239,7 +239,7 @@ if (!empty($_GET['php_info'])) {
                     removeOnClick: true,
                     uploadUrl: '/examples/php/server.php?upload=1',
                     removeUrl: '/examples/php/server.php?remove=1',
-                    saveFilenameCallbackUrl: '/examples/php/server.php?save_filename=1'
+                    saveFilenameUrl: '/examples/php/server.php?save_filename=1'
                 });
                 ff.loadingCallback = toggleLoadingScreen;
                 ff.alertCallback = a => { toast(a.message, a.type, 4000); }
