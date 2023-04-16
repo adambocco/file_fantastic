@@ -208,8 +208,6 @@ $filePath = $_SERVER['DOCUMENT_ROOT'] . $clientRoot . 'examples/uploads';
                 ?>");
                 let loaderToast = null;
 
-                const uploadIndividually = true;
-                const removeIndividually = true;
                 ff = new FileFantastic({
                     id: 'ff_files',
                     payloadType: 'formData',
@@ -226,9 +224,9 @@ $filePath = $_SERVER['DOCUMENT_ROOT'] . $clientRoot . 'examples/uploads';
                     existingUrls: existingUrls,
                     maxFileSize: 1024*1024*1000,
                     uploadType: 'formData',
-                    uploadOnInput: false,
-                    uploadIndividually: uploadIndividually,
-                    removeIndividually: removeIndividually,
+                    uploadOnInput: true,
+                    uploadIndividually: true,
+                    removeIndividually: true,
                     removeOnClick: true,
                     uploadUrl: '<?php echo $clientRoot; ?>examples/php/server.php?upload=1',
                     removeUrl: '<?php echo $clientRoot; ?>examples/php/server.php?remove=1',
