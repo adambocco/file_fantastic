@@ -197,7 +197,7 @@ $filePath = $_SERVER['DOCUMENT_ROOT'] . $clientRoot . 'examples/uploads';
                     $names = array_diff(scandir($filePath), array('..', '.'));
                     $existingUrls = array();
                     foreach ($names as $name) {
-                        $url = '/examples/uploads/' . urlencode($name);
+                        $url = $clientPath . '/' . urlencode($name);
                         $existingUrls[] = array(
                             'url' => $url,
                             'name' => $name,
