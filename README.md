@@ -159,7 +159,7 @@ This library can provide a lightweight file management framework for some of the
 **Default:** `false`  
 **Usage:** Images will be resized within `maxWidth` and `maxHeight`, maintaining aspect ratio.  
   
-## **resize**  
+## **maxWidth**  
 **Type:** `Boolean`  
 **Default:** `1920`  
 **Usage:** Image resize maximum width.  
@@ -188,18 +188,13 @@ This library can provide a lightweight file management framework for some of the
 **Type:** `String`  
 **Default:** `''`  
 **Usage:** URL used for `remove` OR `save` request.  
-  
-## **saveFilenameUrl**  
-**Type:** `String`  
-**Default:** `''`  
-**Usage:** URL used for `saveFilename` request.  
 
 # Callbacks  
 
-## **alertCallback**  
-**Type:** `function({ message: String, type: String('success' | 'info' | 'warning' | 'error') })`  
-**Default:** `window.alert(alert.message)`  
-**Usage:** Callback for common events such as *success*ful file upload, *warning* about a maximum file size, an *error* uploading files.
+## **eventCallback**  
+**Type:** `function({ name: String, message: String, type: String('success' | 'info' | 'warning' | 'danger') })`  
+**Default:** `() => {}`  
+**Usage:** Alernative to listening to [events](#events).
 
 ## **loadingCallback**  
 **Type:** `function(loading: Boolean)`  
@@ -209,17 +204,78 @@ This library can provide a lightweight file management framework for some of the
 ## **progressCallback**  
 **Type:** `function({ runningIndex: Number, finalIndex: Number, runningSize: Number, totalSize: Number })`  
 **Default:** `() => {}`  
-**Usage:** Create a progress bar while making multiple requests (*uploadIndividually* and/or *removeIndividually*)  
+**Usage:** Create a progress bar while making multiple requests (only applicable if *uploadIndividually* is true and multiple files are being uploaded)  
   
 # Events  
 
-**Note:** Events fired by File Fantastic behave the same as standard events. Each event is triggered on the file input element (accessible via `this.input`). Arguments are accessible within the event.detail object.
+**Note:**  
+Events fired by File Fantastic behave the same as standard events. Each event is triggered on the file input element (accessible via `this.input`). Arguments are accessible within the event.detail object which will either be an object with the keys defined below or null. Each event can also be used with `this.eventCallback` with the same argument as the event's `detail`. This will be in the structure:
+```
+{
+  name(String):             name of the event defined below,
+  message(String):          default message for the event,
+  type(String):             'success' | 'warning' | 'danger',
+  payload(null | Object):   the event payload defined below
+}
+```
 
-## **added**  
+
+## **fileCopyFailed**  
 **Payload:**  
-- `fileIds` - The fileId of the added file. 
-  - Type: `String`
-**Usage:** Triggered each time a new file is added whether it is via the file input, a file is copied, or added programatiicaly via `addFile`. 
+- `files` - The File Fantastic file object that failed to be copied. 
+  - Type: `Object`
+**Usage:** Triggered if a file fails to copy because it would exceed `this.maxFiles`.  
+
+## **fileInputFailed**  
+**Payload:**  
+- `files` - The File objects that failed to be added. 
+  - Type: `Object`
+- `filesWrongType` - The files that failed to be added because their types are not in the list of `this.acceptedFileTypes`. 
+  - Type: `Object`
+- `filesWrongExt` - The files that failed to be added because they are not in the list of `this.acceptedExtensions`. 
+  - Type: `Object`
+- `filesTooLarge` - The files that failed to be added because they exceed `this.maxSize`.
+  - Type: `Object`
+- `filesTooMany` - The files that failed to be added because there are already `this.maxFiles`. 
+  - Type: `Object`
+**Usage:** Triggered if a file fails to be added because it would exceed `this.maxFiles`.  
+
+## **noFilesToUpload**  
+**Payload:** `null`  
+**Usage:** Triggered by `this.upload` when the payload is empty because there are no files or no files that meet the criteria to be uploaded (new or modified).  
+
+## **noFilesToRemove**  
+**Payload:** `null`  
+**Usage:** Triggered by `this.remove` when the payload is empty because there are no files or no files to be removed.  
+
+## **filesUploaded**  
+- `response` - JSON response from upload or save request. 
+  - Type: `Any`
+- `uploadedFiles` - File Fantastic file objects that were successfully uploaded.
+  - Type: `Array`
+**Usage:** Triggered when file(s) have been successfully uploaded to the server.  
+
+## **fileUploadFailed**  
+- `response` - JSON response from upload or save request. 
+  - Type: `Any`
+- `failedFiles` - File Fantastic file objects.
+  - Type: `Array`
+**Usage:** Triggered when file(s) failed to upload or were not returned with a file ID to map an existing URL to the file.  
+
+## **filesRemoved**  
+- `response` - JSON response from remove or save request. 
+  - Type: `Any`
+- `failedFiles` - File Fantastic file objects.
+  - Type: `Array`
+**Usage:** Triggered when file(s) have been successfully removed from the server.  
+
+## **filesReplaced**  
+- `response` - JSON response from save request. 
+  - Type: `Any`
+- `failedFiles` - File Fantastic file objects.
+  - Type: `Array`
+**Usage:** Triggered when file(s) have been successfully replaced in a dual-payload (upload and remove) request. For example, when a file is cropped and `this.uploadIndividually` and `this.removeIndividually` are false, is event will be fired instead of both `filesUploaded` and `filesRemoved`.  
+
 
 # Methods  
 

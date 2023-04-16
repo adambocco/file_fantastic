@@ -57,7 +57,6 @@ if (!empty($_GET['php_info'])) {
                 cursor: pointer;
                 margin: 1em;
             }
-
             #loading-overlay {
                 position: fixed;
                 width: 100%;
@@ -68,9 +67,7 @@ if (!empty($_GET['php_info'])) {
                 bottom: 0;
                 background-color: rgba(0,0,0,0.5);
                 z-index: 2;
-                cursor: pointer;
             }
-
             .spinner {
                 position: absolute;
                 left: 45%;
@@ -88,13 +85,12 @@ if (!empty($_GET['php_info'])) {
                 border-top:6px solid rgba(0,174,239,.8);
                 border-radius:100%;
             }
-            
             #toaster {
                 position: fixed;
                 bottom: 1em;
                 right: 1em;
+                z-index: 3;
             }
-
             .toast {
                 visibility: hidden;
                 min-width: 200px;
@@ -103,7 +99,6 @@ if (!empty($_GET['php_info'])) {
                 z-index: 10;
                 margin: 0.4em;
             }
-
             .toast.show {
                 visibility: visible;
             }
@@ -129,7 +124,6 @@ if (!empty($_GET['php_info'])) {
                     opacity: 1;
                 }
             }
-
             @keyframes fadein {
                 from {
                     bottom: 0;
@@ -140,7 +134,6 @@ if (!empty($_GET['php_info'])) {
                     opacity: 1;
                 }
             }
-
             @-webkit-keyframes fadeout {
                 from {
                     bottom: 30px;
@@ -151,7 +144,6 @@ if (!empty($_GET['php_info'])) {
                     opacity: 0;
                 }
             }
-
             @keyframes fadeout {
                 from {
                     bottom: 30px;
@@ -162,7 +154,6 @@ if (!empty($_GET['php_info'])) {
                     opacity: 0;
                 }
             }
-
             @-webkit-keyframes rotation {
                 from {-webkit-transform: rotate(0deg);}
                 to {-webkit-transform: rotate(359deg);}
@@ -220,6 +211,7 @@ if (!empty($_GET['php_info'])) {
                 const removeIndividually = false;
                 ff = new FileFantastic({
                     id: 'ff_files',
+                    payloadType: 'formData',
                     cropper: {
                         uploadOnCrop: true
                     },
@@ -227,7 +219,7 @@ if (!empty($_GET['php_info'])) {
                         perPage: 5,
                         hideDisplayWhenSinglePage: false,
                     },
-                    // debug: {},
+                    debug: {},
                     iconType: 'fa',
                     multiple: true,
                     existingUrls: existingUrls,
@@ -242,7 +234,7 @@ if (!empty($_GET['php_info'])) {
                     saveFilenameUrl: '/examples/php/server.php?save_filename=1'
                 });
                 ff.loadingCallback = toggleLoadingScreen;
-                ff.alertCallback = a => { toast(a.message, a.type, 4000); }
+                ff.eventCallback = a => { toast(a.message, a.type, 4000); }
                 ff.progressCallback = (files, totalFiles, size, totalSize) => {
                     console.log(files, '/', totalFiles, '   ', size, '/', totalSize);
                     const totalBars = 50;
@@ -267,7 +259,14 @@ if (!empty($_GET['php_info'])) {
                 }
                 const fileUploader = document.getElementById('file_uploader');
                 const fileControls = document.getElementById('file_controls');
-                fileUploader.append(ff.pagingContainer, ff.inputButton, ff.displayContainer, ff.debugContainer);
+                fileUploader.append(
+                    ff.pagingContainer, 
+                    ff.inputButton, 
+                    ff.displayContainer, 
+                );
+                if (ff.debugContainer) {
+                    fileUploader.append(ff.debugContainer);
+                }
                 ff.update();
             })
 

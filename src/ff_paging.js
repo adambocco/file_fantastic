@@ -61,6 +61,7 @@ FileFantastic.prototype.createPageInput = function() {
     input.addEventListener('keyup', ev => {
         if (ev.key === 'Enter') {
             this.goToPage(input.value);
+            this.pagingInput.focus();
         }
     });
 
@@ -77,7 +78,6 @@ FileFantastic.prototype.goToPage = function(page) {
         this.page = pageInt;
         this.pagingInput.value = pageInt;
         this.update();
-        this.pagingInput.focus();
     } else {
         this.pagingInput.value = this.page;
     }
@@ -125,9 +125,13 @@ FileFantastic.prototype.pageDisplayCallback = function() {
     }
 
     const pageNumberDisplay = document.createElement('span');
-    if (this.showPageInput && !this.pagingInput) {
-        this.pagingInput = this.createPageInput();
-        currentPageDisplay.append(this.pagingInput);
+    if (this.showPageInput ) {
+        if (this.pagingInput) {
+            this.pagingInput.value = this.page;
+        } else {
+            this.pagingInput = this.createPageInput();
+            currentPageDisplay.append(this.pagingInput);
+        }
     } 
     
     if (!this.showPageInput) {

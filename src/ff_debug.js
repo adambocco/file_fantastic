@@ -302,6 +302,7 @@ FileFantastic.prototype.createFileDebugContainer = function(fileId) {
         originalSize: file.originalSize,
         type: file.type,
         originalName: file.originalName,
+        fileModified: file.fileModified,
         filenameModified: file.filenameModified,
         previewable: file.previewable,
         existing: file.existing,

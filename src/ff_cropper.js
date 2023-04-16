@@ -98,8 +98,9 @@ FileFantastic.prototype.saveCropper = function(fileId, copy=false) {
     file.cropped = true;
     const img = document.getElementById('ff-img-' + fileId);
     canvas.toBlob(blob => {
+        let copiedFile;
         if (copy) {
-            this.copyFile(fileId);
+            copiedFile = this.copyFile(fileId, true);
         }
         if (file.existing) {
             this.removedFiles.push(file);

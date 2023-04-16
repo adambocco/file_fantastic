@@ -50,12 +50,12 @@ if (!empty($_GET['upload'])) {
             $dataUrl = str_replace(' ', '+', substr($file['dataUrl'], strpos($file['dataUrl'], ',') + 1));
             $file = base64_decode($dataUrl);
             if (file_put_contents($filePath, $file)) {
-                $fileResponse = array('url' => $clientPath, 'fileId' => $fileId);
+                $fileResponse = array('url' => $clientPath, 'fileId' => $fileId, 'name' => $name);
             }
         } elseif ($payloadType === 'formData') {
             if (!empty($files[$name])) {
                 if (move_uploaded_file($files[$name]['tmp_name'], $filePath)) {
-                    $fileResponse = array('url' => $clientPath, 'fileId' => $fileId);
+                    $fileResponse = array('url' => $clientPath, 'fileId' => $fileId, 'name' => $name);
                 }
             }
         }
