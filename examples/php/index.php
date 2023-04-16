@@ -2,7 +2,9 @@
 if (!empty($_GET['php_info'])) {
     phpinfo();
 }
-$root = '/';
+$clientRoot = '/';
+$clientPath = $clientRoot . 'examples/uploads';
+$filePath = $_SERVER['DOCUMENT_ROOT'] . $clientRoot . 'examples/uploads';
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -10,17 +12,17 @@ $root = '/';
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="<?php echo $root; ?>src/file_fantastic.css">
+    <link rel="stylesheet" href="<?php echo $clientRoot; ?>src/file_fantastic.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css" integrity="sha512-cyzxRvewl+FOKTtpBzYjW6x6IAYUCZy3sGP40hn+DQkqeluGRCax7qztK2ImL64SA+C7kVWdLI6wvdlStawhyw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.1/css/all.min.css" integrity="sha512-MV7K8+y+gLIBoVD59lQIYicR65iaqukzvf/nwasF0nqhPay5w/9lJmVM2hMDcnK1OnMGCdVK+iQrJ7lzPJQd1w==" crossorigin="anonymous" referrerpolicy="no-referrer" />
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <title>Document</title>
 </head>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js" integrity="sha512-6lplKUSl86rUVprDIjiW8DuOniNX8UDoRATqZSds/7t6zCQZfaCe3e5zcGaQwxa8Kpn5RTM9Fvl3X2lLV4grPQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-    <script src="<?php echo $root; ?>src/file_fantastic.js"></script>
-    <script src="<?php echo $root; ?>src/ff_paging.js"></script>
-    <script src="<?php echo $root; ?>src/ff_cropper.js"></script>
-    <script src="<?php echo $root; ?>src/ff_debug.js"></script>
+    <script src="<?php echo $clientRoot; ?>src/file_fantastic.js"></script>
+    <script src="<?php echo $clientRoot; ?>src/ff_paging.js"></script>
+    <script src="<?php echo $clientRoot; ?>src/ff_cropper.js"></script>
+    <script src="<?php echo $clientRoot; ?>src/ff_debug.js"></script>
     <body>
         <style>
             .ff-input-button {
@@ -192,8 +194,6 @@ $root = '/';
                 toggleLoadingScreen(false);
                 const files = [];
                 const existingUrls = JSON.parse("<?php
-                    $clientPath = '/examples/uploads';
-                    $filePath = $_SERVER['DOCUMENT_ROOT'] . '/examples/uploads';
                     $names = array_diff(scandir($filePath), array('..', '.'));
                     $existingUrls = array();
                     foreach ($names as $name) {
@@ -230,9 +230,9 @@ $root = '/';
                     uploadIndividually: uploadIndividually,
                     removeIndividually: removeIndividually,
                     removeOnClick: true,
-                    uploadUrl: '<?php echo $root; ?>examples/php/server.php?upload=1',
-                    removeUrl: '<?php echo $root; ?>examples/php/server.php?remove=1',
-                    saveFilenameUrl: '<?php echo $root; ?>examples/php/server.php?save_filename=1'
+                    uploadUrl: '<?php echo $clientRoot; ?>examples/php/server.php?upload=1',
+                    removeUrl: '<?php echo $clientRoot; ?>examples/php/server.php?remove=1',
+                    saveFilenameUrl: '<?php echo $clientRoot; ?>examples/php/server.php?save_filename=1'
                 });
                 ff.loadingCallback = toggleLoadingScreen;
                 ff.eventCallback = a => { toast(a.message, a.type, 4000); }

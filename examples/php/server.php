@@ -1,7 +1,7 @@
 <?php
-
-$clientDirectory = '/examples/uploads';
-$fileDirectory =  $_SERVER['DOCUMENT_ROOT'] . '/examples/uploads';
+$clientRoot = '/';
+$clientDirectory = $clientRoot . 'examples/uploads';
+$fileDirectory =  $_SERVER['DOCUMENT_ROOT'] . $clientRoot . 'examples/uploads';
 
 // echo '<pre>' . print_r(json_encode(json_decode(file_get_contents('php://input')), JSON_PRETTY_PRINT), true);
 // die;
