@@ -2,6 +2,7 @@
 if (!empty($_GET['php_info'])) {
     phpinfo();
 }
+$root = '/';
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -16,10 +17,10 @@ if (!empty($_GET['php_info'])) {
     <title>Document</title>
 </head>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js" integrity="sha512-6lplKUSl86rUVprDIjiW8DuOniNX8UDoRATqZSds/7t6zCQZfaCe3e5zcGaQwxa8Kpn5RTM9Fvl3X2lLV4grPQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-    <script src="/src/file_fantastic.js"></script>
-    <script src="/src/ff_paging.js"></script>
-    <script src="/src/ff_cropper.js"></script>
-    <script src="/src/ff_debug.js"></script>
+    <script src="<?php echo $root; ?>src/file_fantastic.js"></script>
+    <script src="<?php echo $root; ?>src/ff_paging.js"></script>
+    <script src="<?php echo $root; ?>src/ff_cropper.js"></script>
+    <script src="<?php echo $root; ?>src/ff_debug.js"></script>
     <body>
         <style>
             .ff-input-button {
@@ -229,9 +230,9 @@ if (!empty($_GET['php_info'])) {
                     uploadIndividually: uploadIndividually,
                     removeIndividually: removeIndividually,
                     removeOnClick: true,
-                    uploadUrl: '/examples/php/server.php?upload=1',
-                    removeUrl: '/examples/php/server.php?remove=1',
-                    saveFilenameUrl: '/examples/php/server.php?save_filename=1'
+                    uploadUrl: '<?php echo $root; ?>examples/php/server.php?upload=1',
+                    removeUrl: '<?php echo $root; ?>examples/php/server.php?remove=1',
+                    saveFilenameUrl: '<?php echo $root; ?>examples/php/server.php?save_filename=1'
                 });
                 ff.loadingCallback = toggleLoadingScreen;
                 ff.eventCallback = a => { toast(a.message, a.type, 4000); }
