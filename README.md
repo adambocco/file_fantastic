@@ -760,6 +760,7 @@ Example using `Paging` and `Cropper`:
 # Examples:
 
 ## PHP:
+- Create an empty directory `/file_fantastic/examples/uploads`
 - Start server from root of repository: `php -S localhost:5000`
 - Go to [localhost:5000/examples/php/index.php](localhost:5000/examples/php/index.php)
 - You may need to change `$clientRoot` at the top of `index.php` and `server.php` if the server has its document root elswhere. For example, if you cloned directly into apache root or httpdocs folder, change `/` to `/file_fantastic/`.

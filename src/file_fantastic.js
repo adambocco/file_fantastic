@@ -832,24 +832,18 @@ FileFantastic.prototype.handleUploadResponse = function(response, fileIds, trigg
 
     if (triggerEvent) {
         if (failedFileIds.length > 0) {
-            const failedAlertMessage = single ? 'Failed to upload file ' + this.getFileById(failedFileIds[0]).name + '.' :
-                'Failed to upload ' + failedFileIds.length + ' file' + (failedFileIds.length === 1 ? '' : 's') + '.';
-    
             this.handleEvent(
                 'fileUploadFailed',
                 {response: response, failedFiles: failedFiles},
-                failedAlertMessage,
+                `Failed to upload ${failedFileIds.length} file${failedFileIds.length > 1 ? 's' : ''}:<br>${this.commaSeparatedList(failedFiles.map(f => f.name))}`,
                 'danger'
             );
         }
         if (uploadedFileIds.length > 0) {
-            const uploadedAlertMessage = single ? 'Successfully uploaded file ' + this.getFileById(uploadedFileIds[0]).name + '!' :
-                'Successfully uploaded ' + uploadedFileIds.length + ' file' + (uploadedFileIds.length === 1 ? '' : 's') + '!';
-    
             this.handleEvent(
                 'fileUploaded',
                 {response: response, uploadedFiles: uploadedFiles},
-                uploadedAlertMessage,
+                `Successfully uploaded ${uploadedFiles.length} file${uploadedFiles.length > 1 ? 's' : ''}:<br>${this.commaSeparatedList(uploadedFiles.map(f => f.name))}`,
                 'success'
             );
         }
@@ -875,7 +869,7 @@ FileFantastic.prototype.handleSaveResponse = function(response, uploadedFileIds=
         this.handleEvent(
             'filesRemoved',
             {response: response, removedFiles: removedFiles},
-            'Successfully removed file' + (removedFiles.length === 1 ? ' ' : 's ') + removedFiles.map(f => f.existingUrl.url).join(', '), 
+            `Successfully removed ${removedFiles.length} file${removedFiles.length === 1 ? '' : 's'}:<br>${this.commaSeparatedList(removedFiles.map(f => f.existingUrl.url))}`, 
             'success'
         );
     }
@@ -883,7 +877,7 @@ FileFantastic.prototype.handleSaveResponse = function(response, uploadedFileIds=
         this.handleEvent(
             'fileUploadFailed',
             {response: response, failedFiles: failedUploadedFiles},
-            'Failed to upload ' + failedUploadedFiles.length + ' file' + (failedUploadedFiles.length === 1 ? '' : 's') + '.',
+            `Failed to upload ${failedUploadedFiles.length} file${failedUploadedFiles.length === 1 ? '' : 's'}:<br>${this.commaSeparatedList(failedUploadedFiles.map(f => f.name))}.`,
             'danger'
         );
     }
@@ -891,7 +885,7 @@ FileFantastic.prototype.handleSaveResponse = function(response, uploadedFileIds=
         this.handleEvent(
             'filesUploaded',
             {response: response, uploadedFiles: uploadedFiles},
-            'Successfully uploaded ' + uploadedFiles.length + ' file' + (uploadedFiles.length === 1 ? '' : 's') + '!',
+            `Successfully uploaded ${uploadedFiles.length} file${uploadedFiles.length === 1 ? '' : 's'}:<br>${this.commaSeparatedList(uploadedFiles.map(f => f.name))}`,
             'success'
         );
     }
@@ -899,7 +893,7 @@ FileFantastic.prototype.handleSaveResponse = function(response, uploadedFileIds=
         this.handleEvent(
             'filesReplaced',
             {response: response, replacedFiles: replacedFiles},
-            'Successfully replaced ' + replacedFiles.length + ' file' + (replacedFiles.length === 1 ? '' : 's') + '!',
+            `Successfully replaced ${replacedFiles.length} file${replacedFiles.length === 1 ? '' : 's'}:<br>${this.commaSeparatedList(replacedFiles.map(f => f.name))}`,
             'success'
         );
     }
@@ -1164,7 +1158,7 @@ FileFantastic.prototype.handleRemoveResponse = function(response, fileIds, trigg
         this.handleEvent(
             'fileRemoved',
             {response: response, removedFiles: removedFiles},
-            `Successfully removed file(${removedFiles.length === 1 ? '' : 's'} ${removedFiles.map(f => f.existingUrl.url).join(', ')}`, 
+            `Successfully removed ${removedFiles.length} file${removedFiles.length === 1 ? '' : 's'}:<br>${this.commaSeparatedList(removedFiles.map(f => f.existingUrl.url))}`, 
             'success'
         );
     }
@@ -1250,6 +1244,13 @@ FileFantastic.prototype.createInput = function () {
     return input;
 }
 
+FileFantastic.prototype.commaSeparatedList = function(arr) {
+    return arr.length === 0 ? ''
+      : arr.length === 1 ? '<b>' + arr[0] + '</b>'
+      : arr.length === 2 ? `<b>${arr[0]}</b> and <b>${arr[1]}</b>`
+      : `<b>${arr.slice(0, -1).join('</b>, <b>')} and <b>${arr.slice(-1)}</b>`;
+}
+
 FileFantastic.prototype.fileInputCallback = function() {
     if (!this.multiple) {
         this.files = {};
@@ -1316,25 +1317,18 @@ FileFantastic.prototype.fileInputCallback = function() {
 
     if (filesFailedToInput.length > 0) {
 
-        const commaSeparatedList = arr => {
-            arr.length === 0 ? ''
-              : arr.length === 1 ? '<b>' + arr[0] + '</b>'
-              : arr.length === 2 ? `<b>${arr[0]}</b> and <b>${arr[1]}</b>`
-              : `<b>${arr.slice(0, -1).join('</b>, <b>')} and <b>${arr.slice(-1)}</b>`;
-        }
-
         let message = [];
         if (filesWrongExt.length > 0) {
-            message.push(`The file${filesWrongExt.length > 1 ? 's' : ''} ${commaSeparatedList(filesWrongExt.map(f => f.name))} could not be uploaded because only the extensions ${commaSeparatedList(this.acceptedExtensions.join)} are allowed.`);
+            message.push(`The file${filesWrongExt.length > 1 ? 's' : ''} ${this.commaSeparatedList(filesWrongExt.map(f => f.name))} could not be uploaded because only the extensions ${this.commaSeparatedList(this.acceptedExtensions.join)} are allowed.`);
         }
         if (filesWrongType.length > 0) {
-            message.push(`The file${filesWrongType.length > 1 ? 's' : ''} ${commaSeparatedList(filesWrongType.map(f => f.name))} could not be uploaded because only the types ${commaSeparatedList(this.acceptedFileTypes.join)} are allowed.`);
+            message.push(`The file${filesWrongType.length > 1 ? 's' : ''} ${this.commaSeparatedList(filesWrongType.map(f => f.name))} could not be uploaded because only the types ${this.commaSeparatedList(this.acceptedFileTypes.join)} are allowed.`);
         }
         if (filesTooMany.length > 0) {
-            message.push(`The file${filesTooMany.length > 1 ? 's' : ''} ${commaSeparatedList(filesTooMany.map(f => f.name))} could not be uploaded because only a maximum of ${this.maxFiles} files may be uploaded.`);
+            message.push(`The file${filesTooMany.length > 1 ? 's' : ''} ${this.commaSeparatedList(filesTooMany.map(f => f.name))} could not be uploaded because only a maximum of ${this.maxFiles} files may be uploaded.`);
         }
         if (filesTooLarge.length > 0) {
-            message.push(`The file${filesTooLarge.length > 1 ? 's' : ''} ${commaSeparatedList(filesTooLarge.map(f => f.name))} could not be uploaded because they exceed the maximum file size of ${this.fileSizeToHumanReadable(this.maxFileSize)}.`);
+            message.push(`The file${filesTooLarge.length > 1 ? 's' : ''} ${this.commaSeparatedList(filesTooLarge.map(f => f.name))} could not be uploaded because they exceed the maximum file size of ${this.fileSizeToHumanReadable(this.maxFileSize)}.`);
         }
         this.handleEvent(
             'fileInputFailed',

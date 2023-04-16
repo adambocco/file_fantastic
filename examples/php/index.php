@@ -220,7 +220,7 @@ $filePath = $_SERVER['DOCUMENT_ROOT'] . $clientRoot . 'examples/uploads';
                         perPage: 5,
                         hideDisplayWhenSinglePage: false,
                     },
-                    debug: {},
+                    <?php echo (empty($_GET['debug']) ? '' : 'debug: {}'); ?>,
                     iconType: 'fa',
                     multiple: true,
                     existingUrls: existingUrls,
