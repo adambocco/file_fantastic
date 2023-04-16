@@ -208,8 +208,8 @@ $filePath = $_SERVER['DOCUMENT_ROOT'] . $clientRoot . 'examples/uploads';
                 ?>");
                 let loaderToast = null;
 
-                const uploadIndividually = false;
-                const removeIndividually = false;
+                const uploadIndividually = true;
+                const removeIndividually = true;
                 ff = new FileFantastic({
                     id: 'ff_files',
                     payloadType: 'formData',
