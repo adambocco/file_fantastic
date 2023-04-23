@@ -104,96 +104,119 @@ function FileFantastic(params) {
 
     this.icons = {
         edit: {
-            mdi: 'mdi-pencil-box',
+            mdi: 'mdi-image-edit',
+            mi: 'mode_edit',
             fa: 'fa-pen-to-square',
             text: 'Edit',
         },
+        crop: {
+            mdi: 'mdi-image-crop',
+            mi: 'crop',
+            fa: 'fa-crop',
+            text: 'Crop'
+        },
         copy: {
-            mdi: 'mdi-content-copy',
+            mdi: 'mdi-content-content-copy',
+            mi: 'file_copy',
             fa: 'fa-copy',
             text: 'Copy',
         },
         download: {
             mdi: 'mdi-file-file-download',
+            mi: 'file_download',
             fa: 'fa-download',
             text: 'Download',
         },
         close: {
             mdi: 'mdi-navigation-close',
+            mi: 'close',
             fa: 'fa-xmark',
             text: 'Close',
         },
         remove: {
-            mdi: 'mdi-navigation-close',
-            fa: 'fa-remove',
+            mdi: 'mdi-action-delete',
+            mi: 'delete',
+            fa: 'fa-trash-can',
             text: 'Remove',
         },
         save: {
             mdi: 'mdi-navigation-check',
+            mi: 'done',
             fa: 'fa-check',
             text: 'Done',
         },
         undo: {
             mdi: 'mdi-content-undo',
+            mi: 'undo',
             fa: 'fa-trash-arrow-up',
             text: 'Undo',
         },
         zoomOut: {
             mdi: 'mdi-content-add',
+            mi: 'zoom_out',
             fa: 'fa-search-minus',
             text: 'Zoom Out',
         },
         zoomIn: {
             mdi: 'mdi-content-remove',
+            mi: 'zoom_in',
             fa: 'fa-search-plus',
             text: 'Zoom Out',
         },
         rotateRight: {
             mdi: 'mdi-image-rotate-right',
+            mi: 'rotate_right',
             fa: 'fa-rotate-right',
             text: 'Rotate Clockwise',
         },
         rotateLeft: {
             mdi: 'mdi-image-rotate-right',
+            mi: 'rotate_left',
             fa: 'fa-rotate-left',
             text: 'Rotate Counter-Clockwise',
         },
         moveLeft: {
             mdi: 'mdi-hardware-keyboard-arrow-left',
+            mi: 'west',
             fa: 'fa-arrow-left',
             text: 'Move Left',
         },
         moveRight: {
             mdi: 'mdi-hardware-keyboard-arrow-right',
+            mi: 'east',
             fa: 'fa-arrow-right',
             text: 'Move Right',
         },
         moveUp: {
             mdi: 'mdi-hardware-keyboard-arrow-up',
+            mi: 'north',
             fa: 'fa-arrow-up',
             text: 'Move Up',
         },
         moveDown: {
             mdi: 'mdi-hardware-keyboard-arrow-down',
+            mi: 'south',
             fa: 'fa-arrow-down',
             text: 'Move Down',
         },
         leftChevron: {
             mdi: 'mdi-hardware-keyboard-arrow-left',
+            mi: 'chevron_left',
             fa: 'fa-chevron-left',
             text: '<',
         },
         rightChevron: {
             mdi: 'mdi-hardware-keyboard-arrow-right',
+            mi: 'chevron_right',
             fa: 'fa-chevron-right',
             text: '>',
         }
     };
 
-
-    this.iconType = ['mdi', 'fa', 'text'].includes(params.iconType) ? params.iconType : 'text';
+    this.iconType = ['mdi', 'mi', 'fa', 'text'].includes(params.iconType) ? params.iconType : 'text';
+    this.includeIconText = params.includeIconText === undefined ? true : params.includeIconText;
     this.files = [];
-    this.id = params.id === undefined ? this.generateUID() : params.id;
+    this.id = params.id === undefined ? 'ff_files' : params.id;
     this.multiple = params.multiple === undefined ? false : params.multiple;
     this.payloadType = ['json', 'formData'].includes(params.payloadType) ? params.payloadType : 'json';
     this.uploadUrl = params.uploadUrl === undefined ? '' : params.uploadUrl; 
@@ -227,9 +250,11 @@ function FileFantastic(params) {
     this.resizeMaxHeight = params.resizeMaxHeight || 1224;
 
     this.dropify = params.dropify === undefined ? true : params.dropify;
-    this.eventCallback = params.eventCallback || (() => {});
-    this.loadingCallback = params.loadingCallback || (()=>{});
-    this.progressCallback = params.progressCallback || (()=>{});
+
+    this.eventCallback = params.eventCallback || null;
+    this.loadingCallback = params.loadingCallback || null;
+    this.progressCallback = params.progressCallback || null;
+    this.sortCallback = params.sortCallback || null;
     
     this.acceptedFileTypes = null;
     if (params.acceptedFileTypes) {
@@ -249,10 +274,15 @@ function FileFantastic(params) {
         this.inputButton = this.createDropify();
     } else if (params.inputButton) {
         this.inputButton = params.inputButton.constructor === String ? document.getElementById(params.inputButton) : params.inputButton;
-        this.inputButton.addEventListener('click', ev => {this.input.click()});
     } else {
         this.inputButtonText = params.inputButtonText === undefined ? 'Browse' : params.inputButtonText;
         this.inputButton = this.createInputButton();
+    }
+    this.inputButton.addEventListener('click', ev => {this.input.click()});
+
+    if (params.inputButtonContainer) {
+        params.inputButtonContainer = params.inputButtonContainer.constructor === String ? document.getElementById(params.inputButtonContainer) : params.inputButtonContainer;
+        params.inputButtonContainer.append(this.inputButton);
     }
 
     if (this.multiple) {
@@ -333,7 +363,6 @@ FileFantastic.prototype.getFileByName = function(name) {
 FileFantastic.prototype.createInputButton = function() {
     const button = document.createElement('button');
     button.type = 'button';
-    button.addEventListener('click', ev => {this.input.click()});
     button.classList.add('ff-input-button');
     button.id = 'ff-input-button-' + this.id;
     button.append(this.inputButtonText);
@@ -347,19 +376,6 @@ FileFantastic.prototype.createInputContainer = function() {
     return container;
 };
 
-FileFantastic.prototype.sortFilesCallback = function(a,b) {
-    if (!a.name || !b.name) return 0;
-    const aa = a.name.toLowerCase();
-    const bb = b.name.toLowerCase();
-    if (aa < bb) {
-        return -1;
-    }
-    if (aa > bb) {
-        return 1;
-    }
-    return 0;
-}
-
 FileFantastic.prototype.generateUID = function() {
     let firstPart = (Math.random() * 46656) | 0;
     let secondPart = (Math.random() * 46656) | 0;
@@ -369,6 +385,16 @@ FileFantastic.prototype.generateUID = function() {
 }
 
 FileFantastic.prototype.update = function() {
+    if (this.paging) {
+        const totalPages = Math.ceil(this.files.length / this.perPage);
+        if (this.page < 1) {
+            this.page = 1;
+        }
+        if (this.page > totalPages) {
+            this.page = totalPages;
+        }
+    }
+
     let displayContainers = document.querySelectorAll('.ff-file-container-' + this.id);
     for (let displayContainer of displayContainers) {
         const fileId = displayContainer.dataset.fileId;
@@ -379,12 +405,14 @@ FileFantastic.prototype.update = function() {
         }
     }
 
-    this.files.sort(this.sortFilesCallback);
+    if (this.sortCallback) {       
+        this.files.sort(this.sortCallback);
+    }
     const files = this.paging ? this.getCurrentPageFiles() : this.files;
 
     for (let file of files) {
         let fileDisplay = this.displayCallback(file.fileId);
-        this.displayContainer.appendChild(fileDisplay);
+        this.displayContainer.append(fileDisplay);
         this.paging && this.toggleDisplayed(fileDisplay, true);
     }
     if (this.paging) {
@@ -397,21 +425,34 @@ FileFantastic.prototype.getIcon = function(key) {
     const icon = document.createElement('div');
     if (!this.icons[key] && key.indexOf(':') === -1) {
         console.warning('Icon does not exist for ', key, ' : ', this.iconType);
-        icon.appendChild(document.createTextNode(key.charAt(0).toUpperCase() + key.slice(1)));
+        icon.append(key.charAt(0).toUpperCase() + key.slice(1));
         return icon;
     }
     if (this.iconType === 'text') {
-        icon.appendChild(document.createTextNode(this.icons[key].text));
+        icon.append(this.icons[key].text);
     } else if (key.indexOf(':') !== -1 || key === NaN) {
         if (key === '0:0' || key === NaN) {
             key = 'Free';
         }
-        icon.appendChild(document.createTextNode(key));
+        icon.append(key);
     } else {
         if (this.iconType === 'fa') {
             icon.classList.add('fa');
+        } else if (this.iconType === 'mi') {
+            icon.classList.add('material-icons');
+            icon.innerHTML = this.icons[key][this.iconType];
         }
         icon.classList.add('ff-icon', this.icons[key][this.iconType]);
+        
+        if (this.includeIconText) {
+            const iconWrapper = document.createElement('div');
+            iconWrapper.classList.add('ff-icon-wrapper');
+            const iconText = document.createElement('div');
+            iconText.classList.add('ff-icon-text');
+            iconText.append(key);
+            iconWrapper.append(icon, iconText);
+            return iconWrapper;
+        }
     }
     return icon;
 }
@@ -438,7 +479,7 @@ FileFantastic.prototype.createVideoPreview = function(fileId) {
     source.type = file.type;
     source.onload = ev => {source.classList.remove('ff-loading');}
     source.onerror = err => {source.classList.remove('ff-loading');}
-    video.appendChild(source);
+    video.append(source);
     return video;
 }
 
@@ -523,7 +564,7 @@ FileFantastic.prototype.createFilenamePreview = function(fileId) {
                 while (div.firstChild) {
                     div.firstChild.remove();
                 }
-                div.appendChild(document.createTextNode(file.name));
+                div.append(file.name);
                 this.toggleDisplayed(div, true);
                 this.toggleDisplayed(editFilenameButton, true);
                 filenameInput.remove();
@@ -615,7 +656,7 @@ FileFantastic.prototype.createCopyButton = function(fileId) {
     const div = document.createElement('div');
     div.classList.add('ff-copy-file-button');
     div.id = 'ff-copy-file-button-' + fileId;
-    div.appendChild(this.getIcon('copy'));
+    div.append(this.getIcon('copy'));
     div.addEventListener('click', ev => {
         this.copyFile(fileId);
     })
@@ -626,7 +667,7 @@ FileFantastic.prototype.createDownloadFileButton = function(fileId) {
     const div = document.createElement('div');
     div.classList.add('ff-download-file-button');
     div.id = 'ff-download-file-button-' + fileId;
-    div.appendChild(this.getIcon('download'));
+    div.append(this.getIcon('download'));
     div.addEventListener('click', ev => {this.downloadFile(fileId)})
     return div;
 }
@@ -643,19 +684,19 @@ FileFantastic.prototype.createFileDisplay = function(fileId) {
     if (file.previewable) {
         if (this.previewImages && this.acceptedImagePreviewTypes.includes(file.type)) {
             container.classList.add('ff-img-preview-container');
-            container.appendChild(this.createImgPreview(fileId));
+            container.append(this.createImgPreview(fileId));
         } else if (this.previewAudio && this.acceptedAudioPreviewTypes.includes(file.type)) {
             container.classList.add('ff-audio-preview-container');
-            container.appendChild(this.createAudioPreview(fileId));
+            container.append(this.createAudioPreview(fileId));
         } else if (this.previewVideo && this.acceptedVideoPreviewTypes.includes(file.type)) {
             container.classList.add('ff-video-preview-container');
-            container.appendChild(this.createVideoPreview(fileId));
+            container.append(this.createVideoPreview(fileId));
         }
         if (this.showFilename || this.editableFilename) {
-            container.appendChild(this.createFilenamePreview(fileId));
+            container.append(this.createFilenamePreview(fileId));
         }
     } else {
-        container.appendChild(this.createFilenamePreview(fileId));
+        container.append(this.createFilenamePreview(fileId));
         return container;
     }
     return container;
@@ -687,13 +728,13 @@ FileFantastic.prototype.displayCallback = function(fileId) {
 
     if (!existingContainer) {
         file.container = container;
-        container.appendChild(this.createFileDisplay(fileId))
+        container.append(this.createFileDisplay(fileId))
         const buttons = [];
-        if (this.downloadable) {
-            buttons.push(this.createDownloadFileButton(fileId));
-        }
         if (this.removeable || !file.existing) {
             buttons.push(this.createRemoveButton(fileId));
+        }
+        if (this.downloadable) {
+            buttons.push(this.createDownloadFileButton(fileId));
         }
         if (this.acceptedImagePreviewTypes.includes(file.type) && this.croppable) {
             buttons.push(this.createOpenCropperButton(fileId));
@@ -704,14 +745,14 @@ FileFantastic.prototype.displayCallback = function(fileId) {
         if (buttons.length > 0) {
             const controlContainer = this.createFileControlContainer();
             controlContainer.append(...buttons);
-            container.appendChild(controlContainer);
+            container.append(controlContainer);
         }
     } else {
         this.updateFileDisplay(fileId);
     }
 
     if (this.debug) {
-        container.appendChild(this.createFileDebugContainer(fileId))
+        container.append(this.createFileDebugContainer(fileId))
     }
     return container;
 }
@@ -739,8 +780,10 @@ FileFantastic.prototype.createRemoveButton = function(fileId) {
     const removeButton = document.createElement('div');
     removeButton.classList.add('ff-remove-file-button');
     removeButton.id = 'ff-remove-file-button-' + fileId;
-    removeButton.addEventListener('click', ev => {this.remove(fileId);})
-    removeButton.appendChild(this.getIcon('remove'));
+    removeButton.addEventListener('click', ev => {
+        this.remove(fileId, !this.removeOnClick);
+    })
+    removeButton.append(this.getIcon('remove'));
     return removeButton;
 }
 
@@ -751,13 +794,13 @@ FileFantastic.prototype.downloadFile = function(fileId) {
     const link = document.createElement("a");
     link.download = filename;
     link.href = href;
-    document.body.appendChild(link);
+    document.body.append(link);
     link.click();
     document.body.removeChild(link);
     delete link;
 }
 
-FileFantastic.prototype.upload = function(fileIds=null) {
+FileFantastic.prototype.upload = function(fileIds=null, triggerEvent=true, cb=()=>{}) {
     let filesToUpload = this.getFilesToUpload(fileIds);
     if (filesToUpload.length === 0) {
         this.handleEvent(
@@ -768,6 +811,7 @@ FileFantastic.prototype.upload = function(fileIds=null) {
         );
         return;
     }
+    console.log("Uploading files: ", filesToUpload)
 
     this.loadingCallback(true);
 
@@ -782,7 +826,7 @@ FileFantastic.prototype.upload = function(fileIds=null) {
             const file = filesToUpload[i];
             const payload = this.getUploadPayload(file.fileId, true, true);
             this.doXhr(this.uploadUrl, payload, response => {
-                this.handleUploadResponse(response, file.fileId);
+                this.handleUploadResponse(response, file.fileId, triggerEvent, cb);
                 runningSize += file.size;
                 runningIndex++;
                 this.progressCallback(runningIndex, totalIndex, runningSize, totalSize);
@@ -796,18 +840,19 @@ FileFantastic.prototype.upload = function(fileIds=null) {
     } else {
         const payload = this.getUploadPayload(fileIds, true, true);
         this.doXhr(this.uploadUrl, payload, response => {
-            this.handleUploadResponse(response, filesToUpload.map(f => f.fileId));
+            this.handleUploadResponse(response, filesToUpload.map(f => f.fileId), triggerEvent, cb);
             this.loadingCallback(false);
             this.update();
         }, this.payloadType === 'json')
     }
 }
 
-FileFantastic.prototype.handleUploadResponse = function(response, fileIds, triggerEvent=true) {
+FileFantastic.prototype.handleUploadResponse = function(response, fileIds, triggerEvent=true, cb=()=>{}) {
     const single = fileIds?.constructor === String;
     fileIds = fileIds?.constructor === String ? [fileIds] : fileIds;
     response = response.constructor !== Array ? [response] : response;
-    console.log("response: ", response)
+
+
     const uploadedFiles = [];
     for (let fileResponse of response) {
         const fileId = fileResponse.fileId || (single ? fileIds[0] : null);
@@ -815,7 +860,7 @@ FileFantastic.prototype.handleUploadResponse = function(response, fileIds, trigg
             console.error('Upload response missing file ID to map existing URL', 'Response:', response, 'File Ids:', fileIds);
             continue;
         }
-        delete fileResponse.fileId;
+
         const file = this.getFileById(fileId);
         if (fileResponse.url || fileResponse.constructor === String) {
             const existingUrl = fileResponse.constructor === String ? {url: fileResponse} : fileResponse;
@@ -829,6 +874,8 @@ FileFantastic.prototype.handleUploadResponse = function(response, fileIds, trigg
     const uploadedFileIds = uploadedFiles.map(f => f.fileId);
     const failedFileIds = fileIds.filter(fId => !uploadedFileIds.includes(fId));
     const failedFiles = this.files.filter(f => failedFileIds.includes(f.fileId));
+
+    cb(response, uploadedFiles);
 
     if (triggerEvent) {
         if (failedFileIds.length > 0) {
@@ -851,20 +898,30 @@ FileFantastic.prototype.handleUploadResponse = function(response, fileIds, trigg
     return [uploadedFiles, failedFiles];
 }
 
-FileFantastic.prototype.handleSaveResponse = function(response, uploadedFileIds=[], removedFileIds=[]) {
+FileFantastic.prototype.handleSaveResponse = function(response, uploadedFileIds=[], removedFileIds=[], cb=()=>{}) {
     const replacedFileIds = uploadedFileIds.filter(uId => removedFileIds.includes(uId));
-    removedFileIds = removedFileIds.filter(rId => !replacedFileIds.includes(rId));
-    let removedFiles = [], uploadedFiles = [], failedUploadedFiles = [];
+    let removedFiles = [];
+    let uploadedFiles = [];
+    let failedUploadedFiles = [];
     if (removedFileIds.length > 0) {
-        removedFiles = this.handleRemoveResponse(response, removedFileIds, false);
+        const removeResponse = response?.removeResponse ? response.removeResponse : response;
+        removedFiles = this.handleRemoveResponse(removeResponse, removedFileIds, false, replacedFileIds);
     }
     if (uploadedFileIds.length > 0) {
-        [uploadedFiles, failedUploadedFiles] = this.handleUploadResponse(response, uploadedFileIds, false);
+        const uploadResponse = response?.uploadResponse ? response.uploadResponse : response;
+        const r = this.handleUploadResponse(uploadResponse, uploadedFileIds, false);
+        uploadedFiles = r[0];
+        failedUploadedFiles = r[1];
+        
         uploadedFileIds = uploadedFiles.map(u => u.fileId);
     }
-    uploadedFileIds = uploadedFileIds.filter(uId => !replacedFileIds.includes(uId));
     const replacedFiles = uploadedFiles.filter(u => replacedFileIds.includes(u.fileId));
-    uploadedFiles = uploadedFiles.filter(u => !replacedFileIds.includes(u.fileId))
+    uploadedFileIds = uploadedFileIds.filter(uId => !replacedFileIds.includes(uId));
+    removedFileIds = removedFileIds.filter(rId => !replacedFileIds.includes(rId));
+    uploadedFiles = uploadedFiles.filter(u => !replacedFileIds.includes(u.fileId));
+    removedFiles = removedFiles.filter(r => !replacedFileIds.includes(r.fileId))
+
+    cb(response, uploadedFileIds, removedFileIds);
     if (removedFiles.length > 0) {
         this.handleEvent(
             'filesRemoved',
@@ -890,6 +947,7 @@ FileFantastic.prototype.handleSaveResponse = function(response, uploadedFileIds=
         );
     }
     if (replacedFiles.length > 0) {
+        console.log("Repla ", replacedFileIds)
         this.handleEvent(
             'filesReplaced',
             {response: response, replacedFiles: replacedFiles},
@@ -899,15 +957,21 @@ FileFantastic.prototype.handleSaveResponse = function(response, uploadedFileIds=
     }
 }
 
-FileFantastic.prototype.save = function(uploadFileIds=null, removeFileIds=null) {
+FileFantastic.prototype.save = function(uploadFileIds=null, removeFileIds=null, cb=()=>{}) {
     let filesToUpload = this.getFilesToUpload(null);
     let filesToRemove = this.removedFiles;
+    
     if (uploadFileIds) {
         filesToUpload = filesToUpload.filter(v => uploadFileIds.constructor === Array ? uploadFileIds.includes(v.fileId) : uploadFileIds === v.fileId);
     }
+    uploadFileIds = filesToUpload.map(f => f.fileId);
+
     if (removeFileIds) {
         filesToRemove = filesToRemove.filter(v => removeFileIds.constructor === Array ? removeFileIds.includes(v.fileId) : removeFileIds === v.fileId);
     }
+    removeFileIds = filesToRemove.map(f => f.fileId);
+
+    console.log("REMOVE FILE IDS::, ", removeFileIds)
 
     if (filesToUpload.length === 0 && filesToRemove.length === 0) {
         this.handleEvent(
@@ -921,34 +985,43 @@ FileFantastic.prototype.save = function(uploadFileIds=null, removeFileIds=null) 
     
     this.loadingCallback(true);
     if (!this.uploadIndividually && !this.removeIndividually) {
-        this.doXhr(this.uploadUrl, this.getDualPayload(filesToUpload.map(f => f.fileId), filesToRemove.map(f => f.fileId)), response => {
-            this.handleSaveResponse(response, filesToUpload.map(f => f.fileId), filesToRemove.map(f => f.fileId));
+        this.doXhr(this.uploadUrl, this.getDualPayload(uploadFileIds, removeFileIds), response => {
+            this.handleSaveResponse(response, uploadFileIds, removeFileIds);
+            cb(response, uploadFileIds, removeFileIds);
             this.loadingCallback(false);
         }, this.payloadType === 'json')
     } else {
-        const requestRemove = (requestFileIds, last) => {
-            let payload = this.getRemovePayload(requestFileIds);
-            if (!payload) {
-                return;
-            }
+        // const requestRemove = (requestFileIds, last) => {
+        //     let payload = this.getRemovePayload(requestFileIds);
+        //     if (!payload) {
+        //         return;
+        //     }
 
-            if (!this.removeUrl) {
-                payload = this.addToPayload(this.payloadType === 'json' ? {} : new FormData(), 'removedFiles', payload);
-            }
-            this.doXhr(this.removeUrl || this.uploadUrl, payload, response => {
-                this.handleRemoveResponse(response, requestFileIds);
-                if (last) {
-                    this.loadingCallback(false);
-                }
-            }, this.payloadType === 'json')
-        }
+        //     if (!this.removeUrl) {
+        //         payload = this.addToPayload(this.payloadType === 'json' ? {} : new FormData(), 'removedFiles', payload);
+        //     }
+        //     this.doXhr(this.removeUrl || this.uploadUrl, payload, response => {
+        //         this.handleRemoveResponse(response, requestFileIds);
+        //         if (last) {
+        //             this.loadingCallback(false);
+        //         }
+        //     }, this.payloadType === 'json')
+        // }
 
-        if (this.removeIndividually) {
-            filesToRemove.forEach((f, i) => requestRemove(f.fileId, i === filesToRemove.length - 1));
-        } else {
-            requestRemove(filesToRemove.map(f => f.fileId), true);
-        }
-        this.upload(filesToUpload.map(f => f.fileId));
+        // if (this.removeIndividually) {
+        //     filesToRemove.forEach((f, i) => requestRemove(f.fileId, i === filesToRemove.length - 1));
+        // } else {
+        //     requestRemove(filesToRemove.map(f => f.fileId), true);
+        // }
+
+        const replaceFileIds = removeFileIds.filter(fId => uploadFileIds.includes(fId));
+        console.log('REPLACE FILE IDS: ', replaceFileIds);
+        this.remove(filesToRemove.map(f => f.fileId), false, false, replaceFileIds, (removeResponse, removedFiles) => {
+            console.log("REMOVE VALLBACK: ", removeResponse)
+            this.upload(filesToUpload.map(f => f.fileId), false, (uploadResponse, uploadedFiles) => {
+                this.handleSaveResponse({uploadResponse: uploadResponse, removeResponse: removeResponse}, uploadFileIds, removeFileIds, cb);
+            });
+        });
     }
 }
 
@@ -1092,7 +1165,7 @@ FileFantastic.prototype.getRemovePayload = function(fileIds=null) {
     return payload;
 }
 
-FileFantastic.prototype.remove = function(fileIds=null) {
+FileFantastic.prototype.remove = function(fileIds=null, softRemove=false, triggerEvent=true, replaceFileIds=[], cb=()=>{}) {
     let filesToRemove = this.files;
     if (fileIds) {
         filesToRemove = filesToRemove.filter(v => fileIds.constructor === Array ? fileIds.includes(v.fileId) : fileIds === v.fileId);
@@ -1105,6 +1178,7 @@ FileFantastic.prototype.remove = function(fileIds=null) {
             'No files to remove', 
             'success'
         );
+        cb('noFilesToRemove', null);
         return;
     }
     const confirmedFiles = [];
@@ -1120,27 +1194,27 @@ FileFantastic.prototype.remove = function(fileIds=null) {
     this.update();
     if (confirmedFiles.length === 0) return;
 
-    if (this.removeOnClick) {
-        this.loadingCallback(true);
-        if (this.removeIndividually) {
-            confirmedFiles.forEach((f, i) => this.sendRemoveRequest(f.fileId, i === confirmedFiles.length - 1));
-        } else {
-            this.sendRemoveRequest(confirmedFiles.map(f => f.fileId), true);
-        }
-    } else {
+    if (softRemove) {
         confirmedFiles.forEach(f => {
             this.removedFiles.push(f);
             this.removeFile(f.fileId);
         });
         this.update();
+    } else {
+        this.loadingCallback(true);
+        if (this.removeIndividually) {
+            confirmedFiles.forEach((f, i) => this.sendRemoveRequest(f.fileId, i === confirmedFiles.length - 1, triggerEvent, replaceFileIds, cb));
+        } else {
+            this.sendRemoveRequest(confirmedFiles.map(f => f.fileId), true, triggerEvent, replaceFileIds, cb);
+        }
     }
 }
 
-FileFantastic.prototype.sendRemoveRequest = function(fileIds, last) {
+FileFantastic.prototype.sendRemoveRequest = function(fileIds, last, triggerEvent=true, replaceFileIds=[], cb=()=>{}) {
     let payload = this.getRemovePayload(fileIds);
 
     this.doXhr(this.removeUrl || this.uploadUrl, payload, response => {
-        this.handleRemoveResponse(response, fileIds);
+        this.handleRemoveResponse(response, fileIds, triggerEvent, replaceFileIds, cb);
         this.update();
         if (last) {
             this.loadingCallback(false);
@@ -1148,11 +1222,17 @@ FileFantastic.prototype.sendRemoveRequest = function(fileIds, last) {
     }, this.payloadType === 'json')
 }
 
-FileFantastic.prototype.handleRemoveResponse = function(response, fileIds, triggerEvent=true) {
+FileFantastic.prototype.handleRemoveResponse = function(response, fileIds, triggerEvent=true, replaceFileIds=[], cb=()=>{}) {
+    console.log('REMOVE RESPONSE HANDLING: ', fileIds);
     fileIds = fileIds.constructor === Array ? fileIds : [fileIds];
+    replaceFileIds = replaceFileIds.constructor === Array ? replaceFileIds : [replaceFileIds];
     const removedFiles = this.files.concat(this.removedFiles).filter(f => fileIds.includes(f.fileId));
-    this.files = this.files.filter(f => !fileIds.includes(f.fileId));
+
+    const fileFilter = fileIds.filter(fId => !replaceFileIds.includes(fId));
+    this.files = this.files.filter(f => !fileFilter.includes(f.fileId));
     this.removedFiles = this.removedFiles.filter(rf => !fileIds.includes(rf.fileId));
+
+    cb(response, removedFiles);
 
     if (triggerEvent) {
         this.handleEvent(
@@ -1203,9 +1283,6 @@ FileFantastic.prototype.createDropify = function() {
         dropAreaElement.classList.remove('dropify-active');
         this.input.files = ev.dataTransfer.files;
     });
-    dropAreaElement.addEventListener('click', ev => {
-        this.input.click();
-    })
     return dropAreaElement;
 }
 
@@ -1344,7 +1421,9 @@ FileFantastic.prototype.fileInputCallback = function() {
         );
     }
 
-    this.files.sort(this.sortFilesCallback)
+    if (this.sortCallback) {
+        this.files.sort(this.sortCallback)
+    }
     if (this.paging && filesAdded.length > 0) {
         this.page = this.getPageByFileId(filesAdded[filesAdded.length - 1].fileId); 
     }
@@ -1398,7 +1477,8 @@ FileFantastic.prototype.parseExistingUrlIntoFileObject = function(existingUrl, f
     fileObject = fileObject || {
         fileId: this.generateUID(),
     };
-    fileObject.existingUrl = existingUrl;
+    fileObject.existingUrl = JSON.parse(JSON.stringify(existingUrl));
+    delete fileObject.existingUrl.fileId;
     fileObject.existing = true;
     if (existingUrl.name) {
         fileObject.name = this.cleanFilename(existingUrl.name);

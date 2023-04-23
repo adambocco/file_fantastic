@@ -193,19 +193,25 @@ This library can provide a lightweight file management framework for some of the
 
 ## **eventCallback**  
 **Type:** `function({ name: String, message: String, type: String('success' | 'info' | 'warning' | 'danger') })`  
-**Default:** `() => {}`  
+**Default:** `null`  
 **Usage:** Alernative to listening to [events](#events).
 
 ## **loadingCallback**  
 **Type:** `function(loading: Boolean)`  
-**Default:** `() => {}`  
+**Default:** `null`  
 **Usage:** Create a loading screen while making requests.  
 
 ## **progressCallback**  
 **Type:** `function({ runningIndex: Number, finalIndex: Number, runningSize: Number, totalSize: Number })`  
-**Default:** `() => {}`  
+**Default:** `null`  
 **Usage:** Create a progress bar while making multiple requests (only applicable if *uploadIndividually* is true and multiple files are being uploaded)  
   
+## **sortCallback**  
+**Type:** `function({ runningIndex: Number, finalIndex: Number, runningSize: Number, totalSize: Number })`  
+**Default:** `null`  
+**Usage:** Callback function passed to `this.files.sort` which is called on update.  
+  
+
 # Events  
 
 **Note:**  

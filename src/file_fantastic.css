@@ -28,23 +28,18 @@
     max-height: 600px;
 }
 
-@keyframes spin {
-    to { -webkit-transform: rotate(360deg); }
-}
-
-@-webkit-keyframes spin {
-    to { -webkit-transform: rotate(360deg); }
-}
-
 .ff-file-preview-container.ff-img-preview-container {
     display: block;
     text-align: center;
 }
 
 .ff-open-cropper-button {
+    flex: 1;
     display:flex;
     align-items: center;
     justify-content: center;
+    background-color: rgb(41, 67, 139);
+    color: #eee;
 }
 
 .ff-remove-file-button {
@@ -52,6 +47,8 @@
     display:flex;
     align-items: center;
     justify-content: center;
+    background-color: rgb(41, 67, 139);
+    color: #eee;
 }
 
 .ff-download-file-button {
@@ -99,21 +96,21 @@
     padding: 0.6em;
     font-size: 12px;
     max-width: 250px;
-    word-wrap: anywhere;
 }
 
 .ff-filename-preview-container {
     display: flex;
+    height: 100%;
 }
 
 .ff-filename-preview {
     display: flex;
     align-items: center;
     text-align: left;
-    padding: 0.15em 0.4em;
+    padding: 0.2em 0.4em;
     font-size: 14px;
-    word-wrap: anywhere;
     max-width: 400px;
+    margin-left: auto;
 }
 
 .ff-filename-input {
@@ -122,46 +119,33 @@
 
 .ff-edit-filename-button {
     background-color: cadetblue;
-    border-radius: 5px;
-    height: 20px;
-    width: 20px;
+    margin-left: auto;
+    cursor: pointer;
     display: flex;
+    height: auto;
+    padding: 0.1em;
     justify-content: center;
     align-items: center;
     text-align: center;
-    margin: 0.25em;
-    padding: 0.1em;
-    font-size: 12px;
+    color: #fff;
 }
 
 .ff-filename-save-button {
     background-color: rgb(48, 133, 86);
-    border-radius: 5px;
-    height: 20px;
-    width:20px;
+    color: #fff;
     display: flex;
     justify-content: center;
     align-items: center;
-    text-align: center;
-    margin: 0.25em;
     padding: 0.1em;
-    font-size: 12px;
-    align-self: center;
 }
 
 .ff-filename-cancel-button {
     background-color: maroon;
-    border-radius: 5px;
-    height: 20px;
-    width:20px;
+    color: #fff;
     display: flex;
     justify-content: center;
     align-items: center;
-    text-align: center;
-    margin: 0.25em;
     padding: 0.1em;
-    font-size: 12px;
-    align-self: center;
 }
 
 .ff-input-button {
@@ -173,7 +157,6 @@
 	font: inherit;
 	cursor: pointer;
 	outline: inherit;
-    border-radius: 0px;
 }
 
 .ff-cropper-toolbar {
@@ -218,11 +201,23 @@
     padding: 5px;
     text-align: center;
 }
+.ff-toolbar-icon-save {
+    background-color: rgb(52, 108, 160);
+}
+
+.ff-toolbar-icon-close {
+    background-color: maroon;
+}
+
+.ff-toolbar-icon-copy {
+    background-color: rgb(48, 133, 86);
+}
 
 .ff-file-container {
     margin: 0.2em 0.6em;
     display: flex;
-    height:inherit;
+    height:fit-content;
+    width: fit-content;
 }
 
 .ff-img-container, .ff-audio-container, .ff-video-container {
@@ -243,20 +238,30 @@
 }
 
 .ff-file-control-container > div {
-    font-size: 12px;
     padding: 4px;
     cursor: pointer;
 }
 
 .ff-icon {
-    display: block !important;
-    padding: 0.1em;
-    margin: 0.1em;
     color: #fff;
     cursor: pointer;
-    width: 20%;
-    min-width: 15px;
+}
+
+.ff-icon-wrapper {
     text-align: center;
+    display: flex;
+    flex-direction: column;
+    font-family: sans-serif;
+    font-weight: bold;
+    justify-content: center; 
+}
+
+.ff-icon-text {
+    text-transform: uppercase;
+    margin: 0.2em;
+    text-align: center;
+    font-size: 0.8em;
+    cursor: pointer;
 }
 
 .ff-preview-files-container {
@@ -275,6 +280,7 @@
     border: none;
     color: #eee;
     background-color: rgb(52, 108, 160);
+    cursor: pointer;
 }
 
 .ff-paging-left {
