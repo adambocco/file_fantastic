@@ -17,6 +17,10 @@ $filePath = $_SERVER['DOCUMENT_ROOT'] . $clientRoot . 'examples/uploads';
     <link rel="stylesheet" href="<?php echo $clientRoot; ?>examples/css/style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css" integrity="sha512-cyzxRvewl+FOKTtpBzYjW6x6IAYUCZy3sGP40hn+DQkqeluGRCax7qztK2ImL64SA+C7kVWdLI6wvdlStawhyw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.1/css/all.min.css" integrity="sha512-MV7K8+y+gLIBoVD59lQIYicR65iaqukzvf/nwasF0nqhPay5w/9lJmVM2hMDcnK1OnMGCdVK+iQrJ7lzPJQd1w==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Work+Sans:wght@100;400&display=swap" rel="stylesheet">
+
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <title>File Fantastic</title>
 </head>
@@ -73,7 +77,7 @@ $filePath = $_SERVER['DOCUMENT_ROOT'] . $clientRoot . 'examples/uploads';
                         pagingContainer: 'file_paging',
                         hideDisplayWhenSinglePage: false,
                     },
-                    iconType: 'mdi',
+                    iconType: 'fa',
                     multiple: true,
                     existingUrls: existingUrls,
                     maxFileSize: 1024*1024*1000,

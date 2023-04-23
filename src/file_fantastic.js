@@ -449,7 +449,7 @@ FileFantastic.prototype.getIcon = function(key) {
             iconWrapper.classList.add('ff-icon-wrapper');
             const iconText = document.createElement('div');
             iconText.classList.add('ff-icon-text');
-            iconText.append(key);
+            iconText.append(this.icons[key].text);
             iconWrapper.append(icon, iconText);
             return iconWrapper;
         }
@@ -557,7 +557,7 @@ FileFantastic.prototype.createFilenamePreview = function(fileId) {
             const cancelButton = document.createElement('div');
             cancelButton.classList.add('ff-filename-cancel-button');
             cancelButton.id = 'ff-filename-cancel-button-' + fileId;
-            cancelButton.append(this.getIcon('remove'));
+            cancelButton.append(this.getIcon('close'));
 
             saveButton.addEventListener('click', ev => {
                 this.saveFilename(fileId, filenameInput.value);
