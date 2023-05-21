@@ -40,6 +40,7 @@ $filePath = $_SERVER['DOCUMENT_ROOT'] . $clientRoot . 'examples/uploads';
             <div id="file_uploader">
                 <div id="file_display"></div>
                 <div id="file_input"></div>
+                <div id="debug_container"></div>
             </div>
             <div id="file_controls">
                 <div onclick="uploadAllFiles()" id="upload_all_files">Upload All</div>
@@ -77,25 +78,35 @@ $filePath = $_SERVER['DOCUMENT_ROOT'] . $clientRoot . 'examples/uploads';
                         pagingContainer: 'file_paging',
                         hideDisplayWhenSinglePage: false,
                     },
+                    debug: {
+                        container: 'debug_container'
+                    },
                     iconType: 'fa',
-                    multiple: true,
+                    includeIconText: true,
+                    multiple: false,
                     existingUrls: existingUrls,
                     maxFileSize: 1024*1024*1000,
                     uploadType: 'formData',
-                    uploadOnInput: true,
-                    uploadIndividually: true,
-                    removeIndividually: true,
-                    removeOnClick: true,
+                    uploadOnInput: false,
+                    uploadIndividually: false,
+                    removeIndividually: false,
+                    removeOnClick: false,
                     displayContainer: 'file_display',
-                    pagingContainer: 'file_paging',
-                    inputButtonContainer: 'file_input',
+                    inputContainer: 'file_input',
                     sortCallback: sortAlphabetical,
                     loadingCallback: toggleLoadingScreen,
                     progressCallback: handleLoadingBars,
-                    eventCallback: a => {toast(a.message, a.type, 4000); },
+                    eventCallback: a => {
+                        switch (a.name) {
+                            case 'imageClicked':
+                                expandImage(a.payload.file.previewElement);
+                            default:
+                                toast(a.message, a.type, 4000);
+                        }
+                    },
                     uploadUrl: '<?php echo $clientRoot; ?>examples/php/server.php?upload=1',
                     removeUrl: '<?php echo $clientRoot; ?>examples/php/server.php?remove=1',
-                    saveFilenameUrl: '<?php echo $clientRoot; ?>examples/php/server.php?save_filename=1'
+                    saveUrl: '<?php echo $clientRoot; ?>examples/php/server.php?save=1',
                 });
 
                 const fileUploader = document.getElementById('file_uploader');
@@ -106,7 +117,7 @@ $filePath = $_SERVER['DOCUMENT_ROOT'] . $clientRoot . 'examples/uploads';
             })
 
             function uploadAllFiles() { ff.upload(); }
-            function removeAllFiles() { ff.remove(); }
+            function removeAllFiles() { ff.remove(null, true); }
             function saveFiles() { ff.save(); }
 
             function handleLoadingBars(files, totalFiles, size, totalSize) {
@@ -144,8 +155,18 @@ $filePath = $_SERVER['DOCUMENT_ROOT'] . $clientRoot . 'examples/uploads';
                 return 0;
             }
 
+            function expandImage(img) {
+                let imgExpanded = Array.from(img.classList).includes('img-expanded');
+                document.querySelectorAll('.img-expanded').forEach(el => { el.classList.remove('img-expanded') })
+                if (!imgExpanded) {
+                    img.classList.add('img-expanded');
+                }
+                window.onclick = ev => {
+                    ev.target !== img && img.classList.remove('img-expanded');
+                }
+            }
+
             function toggleLoadingScreen(state=null) {
-                console.log("Toggling: ", state)
                 const loadingOverlay = document.getElementById('loading-overlay');
                 if (state !== null) {
                     loadingOverlay.style.display = state ? '' : 'none';

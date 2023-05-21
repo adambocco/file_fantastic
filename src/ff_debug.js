@@ -1,6 +1,10 @@
 FileFantastic.prototype.initDebug = function(params) {
     this.debug = true;
-    this.debugContainer = this.createDebugContainer();
+    if (params.container) {
+        this.container = params.container.constructor === String ? document.getElementById(params.container) : params.container;
+    } else {
+        this.container = this.createDebugContainer();
+    }
 }
 
 FileFantastic.prototype.createDebugContainer = function() {
@@ -11,8 +15,7 @@ FileFantastic.prototype.createDebugContainer = function() {
 }
 
 FileFantastic.prototype.updateDebugContainer = function() {
-    const container = document.getElementById('ff-debug-container-' + this.id);
-    
+    const container = this.container;
     if (!container) {
         return;
     }
@@ -87,7 +90,7 @@ FileFantastic.prototype.updateDebugContainer = function() {
         existingUrls: this.existingUrls,
         multiple: createCheckbox('multiple'),
         uploadIndividually: createCheckbox('uploadIndividually'),
-        uploadOnInput: createCheckbox('uploadOnInput'),
+        saveOnInput: createCheckbox('saveOnInput'),
         previewable: createCheckbox('previewable'),
         previewVideo: createCheckbox('previewVideo'),
         previewAudio: createCheckbox('previewAudio'),
@@ -95,17 +98,15 @@ FileFantastic.prototype.updateDebugContainer = function() {
         imagesExpandable: createCheckbox('imagesExpandable'),
         copyable: createCheckbox('copyable'),
         downloadable: createCheckbox('downloadable'),
-        editableFilename: createCheckbox('editableFilename'),
         showFilename: createCheckbox('showFilename'),
-        removeable: createCheckbox('removeable'),
+        removable: createCheckbox('removable'),
         removeIndividually: createCheckbox('removeIndividually'),
         removeOnClick: createCheckbox('removeOnClick'),
-        resize: createCheckbox('resize'),
+        resizeImages: createCheckbox('resize'),
         dropify: createCheckbox('dropify'),
         iconType: createInput('iconType'),
         uploadUrl: createInput('uploadUrl'),
         removeUrl: createInput('removeUrl'),
-        removeUrl: createInput('saveFilenameUrl'),
         maxFiles: createInput('maxFiles'),
         maxFileSize: createInput('maxFileSize'),
     }));
@@ -303,7 +304,6 @@ FileFantastic.prototype.createFileDebugContainer = function(fileId) {
         type: file.type,
         originalName: file.originalName,
         fileModified: file.fileModified,
-        filenameModified: file.filenameModified,
         previewable: file.previewable,
         existing: file.existing,
         existingUrl: file.existingUrl

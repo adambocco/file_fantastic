@@ -3,9 +3,6 @@ $clientRoot = '/';
 $clientDirectory = $clientRoot . 'examples/uploads';
 $fileDirectory =  $_SERVER['DOCUMENT_ROOT'] . $clientRoot . 'examples/uploads';
 
-// die('<pre>' . print_r(json_encode(json_decode(file_get_contents('php://input')), JSON_PRETTY_PRINT), true));
-
-
 $ffId = 'ff_files';
 $json = json_decode(file_get_contents('php://input'), true);
 $payloadType = empty($json) ? 'formData' : 'json';
@@ -14,75 +11,66 @@ $post = $payloadType === 'json' ? $json : $_POST;
 $files = rearrangeFiles($_FILES);
 $files = empty($files[$ffId]) ? $files : $files[$ffId];
 
-if (!empty($_GET['upload'])) {
+if (!empty($_GET['save'])) {
     $response = array();
-    $removedFiles = empty($post['removedFiles']) ? array() : $post['removedFiles'];
-    $removedFiles = !empty($removedFiles) && empty($removedFiles[0]) ? array($removedFiles) : $removedFiles;
-
-    foreach ($removedFiles as $file) {
-        $name = explode('/', $file['url']);
-        $name = array_pop($name);
-        removeFile($name);
+    if (isset($post['removedFiles'])) {
+        $response['removeResponse'] = handleRemove($post['removedFiles']);
     }
+    if (isset($post['files'])) {
+        $response['uploadResponse'] = handleUpload($post['files'], $files);
+    }
+    die(json_encode($response));
+}
 
-    unset($post['removedFiles']);
-    $postFiles = empty($post['files']) ? $post : $post['files'];
-    $single = empty($postFiles[0]);
-    $postFiles = $single ? array($postFiles) : $postFiles;
+$single = empty($post[0]);
+if (!empty($_GET['remove'])) {
+    $removeResponse = handleRemove($single ? array($post) : $post);
+    die(json_encode($single && !empty($removeResponse[0]) ? $removeResponse[0] : $removeResponse));
+}
+if (!empty($_GET['upload'])) {
+    $uploadResponse = handleUpload($single ? array($post) : $post , $files);
+    die("<pre>POST: " . print_r($post, true) . "\nFILES" . print_r($files, true) . "\n\$_FILES: " . print_r($_FILES, true));
+    die(json_encode($single && !empty($uploadResponse[0]) ? $uploadResponse[0] : $uploadResponse));
+}
 
-    // die("<pre>POST: " . print_r($_POST, true) . "\nJSON:" . print_r($json, true) . "\nFILES" . print_r($_FILES, true) . "\nfiles: " . print_r($files, true) . "\nRemoved Files: " . print_r($removedFiles, true) . "\nPOSTFILES: " . print_r($postFiles, true));
-    
-    foreach ($postFiles as $file) {
+function handleUpload($filesData, $files) {
+    global $clientDirectory, $fileDirectory, $payloadType;
+    $response = array();
+
+    foreach ($filesData as $file) {
         $name = $file['name'];
         $fileId = $file['fileId'];
         $clientPath = $clientDirectory . '/' . urlencode($name);
         $filePath = $fileDirectory . '/' . $name;
 
-        $fileResponse = null;
-        
-        if (!empty($file['filenameModified'])) {
-            $originalFilePath = $fileDirectory . '/' . $file['existingUrl']['name'];
-            rename($originalFilePath, $filePath);
-            $fileResponse = array('url' => $clientPath, 'fileId' => $fileId);
-        }
-
         if ($payloadType === 'json' && !empty($file['dataUrl'])) {
             $dataUrl = str_replace(' ', '+', substr($file['dataUrl'], strpos($file['dataUrl'], ',') + 1));
             $file = base64_decode($dataUrl);
             if (file_put_contents($filePath, $file)) {
-                $fileResponse = array('url' => $clientPath, 'fileId' => $fileId, 'name' => $name);
+                $response[] = array('url' => $clientPath, 'fileId' => $fileId);
             }
-        } elseif ($payloadType === 'formData') {
-            if (!empty($files[$name])) {
-                if (move_uploaded_file($files[$name]['tmp_name'], $filePath)) {
-                    $fileResponse = array('url' => $clientPath, 'fileId' => $fileId, 'name' => $name);
-                }
+        } elseif ($payloadType === 'formData' && !empty($files[$name])) {
+            if (move_uploaded_file($files[$name]['tmp_name'], $filePath)) {
+                $response[] = array('url' => $clientPath, 'fileId' => $fileId);
             }
         }
-        if ($fileResponse !== null) {
-            $response[] = $fileResponse;
+    }
+    return $response;
+}
+
+function handleRemove($existingUrls) {
+    global $fileDirectory;
+    $response = array();
+    foreach ($existingUrls as $existingUrl) {
+        $fileId = $existingUrl['fileId'];
+        $name = explode('/', $existingUrl['url']);
+        $existingFilePath = $fileDirectory . '/' . end($name);
+        if (!file_exists($existingFilePath) || unlink($existingFilePath)) {
+            $response[] = $fileId;
         }
     }
-
-    die(json_encode(!empty($response) && $single ? $response[0] : $response));
+    return $response;
 }
-if (!empty($_GET['remove'])) {
-    // die("<pre>POST: " . print_r($_POST, true) . "\nJSON:" . print_r($json, true) . "\nFILES" . print_r($_FILES, true) . "\nfiles: " . print_r($files, true) . "\nRemoved Files: " . print_r($removedFiles, true));
-
-    $files = empty($post[0]) ? array($post) : $post;
-    foreach ($files as $file) {
-        removeFile($file['name']);
-    }
-    die(json_encode(array('status' => 'success')));
-}
-if (!empty($_GET['save_filename'])) {
-    $originalFilePath = $fileDirectory . '/' . $post['originalName'];
-    $newFilePath = $fileDirectory . '/' . $post['name'];
-    $clientPath = $clientDirectory . '/' . $post['name'];
-    rename($originalFilePath, $newFilePath);
-    die(json_encode(array('url' => $clientPath, 'fileId' => $post['fileId'])));
-}
-die(0);
 
 function removeFile($name) {
     global $fileDirectory;

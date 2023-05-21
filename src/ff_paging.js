@@ -94,7 +94,7 @@ FileFantastic.prototype.createPageLeftButton = function() {
     leftButton.classList.add('ff-paging-button', 'ff-paging-left');
     leftButton.id = 'ff-paging-left-' + this.id;
     leftButton.addEventListener('click', ev => {this.pageLeftCallback()});
-    leftButton.append(this.getIcon('leftChevron'));
+    leftButton.append(this.getIcon('leftChevron', false));
     return leftButton;
 }
 
@@ -110,7 +110,7 @@ FileFantastic.prototype.createPageRightButton = function() {
     rightButton.classList.add('ff-paging-button', 'ff-paging-right');
     rightButton.id = 'ff-paging-right-' + this.id;
     rightButton.addEventListener('click', ev => {this.pageRightCallback()})
-    rightButton.append(this.getIcon('rightChevron'));
+    rightButton.append(this.getIcon('rightChevron', false));
     return rightButton;
 }
 
@@ -161,12 +161,6 @@ FileFantastic.prototype.getCurrentPageFiles = function() {
 
 FileFantastic.prototype.pageDisplayCallback = function() {
     const totalPages = Math.ceil(this.files.length / this.perPage);
-    if (this.page < 1) {
-        this.page = 1;
-    }
-    if (this.page > totalPages) {
-        this.page = totalPages;
-    }
     const pageButtons = this.getPageButtons();
 
     while (this.pagingContainer.firstChild) {

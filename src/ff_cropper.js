@@ -19,7 +19,7 @@ FileFantastic.prototype.initCropper = function(params) {
         checkOrientation: false,
     };
     this.cropperToolGroups = {
-        main: ['close', 'save', 'copy'],
+        main: ['close', 'save'],
         zoom: ['zoomOut', 'zoomIn'],
         rotate: ['rotateRight', 'rotateLeft'],
         move: ['moveLeft', 'moveRight', 'moveUp', 'moveDown'],
@@ -86,22 +86,14 @@ FileFantastic.prototype.handleCropTool = function(fileId, action){
         this.closeCropper(fileId);
         this.openCropper(fileId);
     }
-    else if (action === 'copy') {
-        this.saveCropper(fileId, true);
-        this.closeCropper(fileId);
-    }
 }
 
-FileFantastic.prototype.saveCropper = function(fileId, copy=false) {
+FileFantastic.prototype.saveCropper = function(fileId) {
     const file = this.getFileById(fileId);
     const canvas = file.cropper.getCroppedCanvas({});
     file.cropped = true;
     const img = document.getElementById('ff-img-' + fileId);
     canvas.toBlob(blob => {
-        let copiedFile;
-        if (copy) {
-            copiedFile = this.copyFile(fileId, true);
-        }
         if (file.existing) {
             this.removedFiles.push(file);
         }

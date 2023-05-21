@@ -99,6 +99,10 @@ body {
 .info {
     background-color: #2b8ee6;
 }
+.img-expanded {
+    max-width: 600px;
+    max-height: 600px;
+}
 @-webkit-keyframes fadein {
     from {
         bottom: 0;
