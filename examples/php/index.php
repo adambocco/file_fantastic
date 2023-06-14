@@ -20,7 +20,6 @@ $filePath = $_SERVER['DOCUMENT_ROOT'] . $clientRoot . 'examples/uploads';
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Work+Sans:wght@100;400&display=swap" rel="stylesheet">
-
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <title>File Fantastic</title>
 </head>
@@ -28,6 +27,7 @@ $filePath = $_SERVER['DOCUMENT_ROOT'] . $clientRoot . 'examples/uploads';
     <script src="<?php echo $clientRoot; ?>src/file_fantastic.js"></script>
     <script src="<?php echo $clientRoot; ?>src/ff_paging.js"></script>
     <script src="<?php echo $clientRoot; ?>src/ff_cropper.js"></script>
+    <script src="<?php echo $clientRoot; ?>src/ff_directories.js"></script>
     <script src="<?php echo $clientRoot; ?>src/ff_debug.js"></script>
     <body>
         <div id="loading-overlay">
@@ -35,8 +35,10 @@ $filePath = $_SERVER['DOCUMENT_ROOT'] . $clientRoot . 'examples/uploads';
         </div>
         <div class="container">
             <h1>File Fantastic</h1>
-            <div id="file_paging"></div>
-            
+            <div id="navigation">
+                <div id="directories"></div>
+                <div id="file_paging"></div>
+            </div>
             <div id="file_uploader">
                 <div id="file_display"></div>
                 <div id="file_input"></div>
@@ -53,44 +55,36 @@ $filePath = $_SERVER['DOCUMENT_ROOT'] . $clientRoot . 'examples/uploads';
             var ff, progressToast;
             document.addEventListener('DOMContentLoaded', () => {
                 toggleLoadingScreen(false);
-                const existingUrls = JSON.parse("<?php
-                    $names = array_diff(scandir($filePath), array('..', '.'));
+
+                <?php
+                    $allFilesAndFolders = array_diff(scandir($filePath), array('..', '.'));
                     $existingUrls = array();
-                    foreach ($names as $name) {
-                        $url = $clientPath . '/' . urlencode($name);
-                        $existingUrls[] = array(
-                            'url' => $url,
-                            'name' => $name,
-                            'size' => filesize($filePath . '/' . $name)
-                        );
+                    $childDirectories = array();
+                    foreach ($allFilesAndFolders as $f) {
+                        if (is_dir($filePath . '/' . $f)){
+                            $childDirectories[] = $f;
+                        } else {
+                            $url = $clientPath . '/' . urlencode($f);
+                            $existingUrls[] = array('url' => $url, 'directory' => '/');
+                        }
                     }
-                    echo addslashes(json_encode($existingUrls));
-                ?>");
+                ?>
+                const existingUrls = JSON.parse("<?php echo addslashes(json_encode($existingUrls)); ?>");
+                const childDirectories = JSON.parse("<?php echo addslashes(json_encode($childDirectories)); ?>")
 
                 ff = new FileFantastic({
-                    <?php echo (empty($_GET['debug']) ? '' : 'debug: {},'); ?>
+                    previewable: false,
                     payloadType: 'formData',
-                    cropper: {
-                        uploadOnCrop: true
-                    },
-                    paging: {
-                        perPage: 5,
-                        pagingContainer: 'file_paging',
-                        hideDisplayWhenSinglePage: false,
-                    },
-                    debug: {
-                        container: 'debug_container'
-                    },
                     iconType: 'fa',
-                    includeIconText: true,
-                    multiple: false,
+                    includeIconText: false,
+                    multiple: true,
                     existingUrls: existingUrls,
                     maxFileSize: 1024*1024*1000,
                     uploadType: 'formData',
-                    uploadOnInput: false,
+                    saveOnInput: false,
                     uploadIndividually: false,
-                    removeIndividually: false,
-                    removeOnClick: false,
+                    removeIndividually: true,
+                    removeOnClick: true,
                     displayContainer: 'file_display',
                     inputContainer: 'file_input',
                     sortCallback: sortAlphabetical,
@@ -107,6 +101,27 @@ $filePath = $_SERVER['DOCUMENT_ROOT'] . $clientRoot . 'examples/uploads';
                     uploadUrl: '<?php echo $clientRoot; ?>examples/php/server.php?upload=1',
                     removeUrl: '<?php echo $clientRoot; ?>examples/php/server.php?remove=1',
                     saveUrl: '<?php echo $clientRoot; ?>examples/php/server.php?save=1',
+                    cropper: {
+                        uploadOnCrop: true
+                    },
+                    paging: {
+                        perPage: 30,
+                        container: 'file_paging',
+                        hideDisplayWhenSinglePage: false,
+                    },
+                    // debug: {
+                    //     container: 'debug_container',
+                    // },
+                    directories: {
+                        container: 'directories',
+                        directory: '/',
+                        parents: [],
+                        directories: childDirectories,
+                        changeDirectoryUrl: '<?php echo $clientRoot; ?>examples/php/server.php?cd=1',
+                        createDirectoryUrl: '<?php echo $clientRoot; ?>examples/php/server.php?mkdir=1',
+                        removeDirectoryUrl: '<?php echo $clientRoot; ?>examples/php/server.php?rmdir=1',
+                    },
+                    <?php echo (empty($_GET['debug']) ? '' : 'debug: {},'); ?>
                 });
 
                 const fileUploader = document.getElementById('file_uploader');

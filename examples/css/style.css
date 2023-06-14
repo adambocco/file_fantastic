@@ -1,9 +1,13 @@
 body {
     font-family: 'Work Sans', sans-serif;
 }
+#navigation {
+    display: flex;
+    justify-content: space-between;
+}
 #file_display {
     display: flex;
-    flex-direction: row;
+    flex-direction: column;
     flex-wrap: wrap;
 }
 #file_paging {
@@ -11,32 +15,36 @@ body {
     display: flex;
 }
 #save_files {
-    padding: 0.2em 0.4em;
-    background-color: rgb(49, 107, 75);
+    padding: 0.4em 0.6em;
+    border-radius: 3px;
+    background-color: #43aa8b;
     color: #eee;
     display: inline-block;
     cursor: pointer;
     margin: 1em;
 }
 #save_files_json {
-    padding: 0.2em 0.4em;
-    background-color: rgb(86, 124, 51);
+    padding: 0.4em 0.6em;
+    border-radius: 3px;
+    background-color: #43aa8b;
     color: #eee;
     display: inline-block;
     cursor: pointer;
     margin: 1em;
 }
 #remove_all_files {
-    padding: 0.2em 0.4em;
-    background-color: rgb(129, 42, 42);
+    padding: 0.4em 0.6em;
+    border-radius: 3px;
+    background-color: #f94144;
     color: #eee;
     display: inline-block;
     cursor: pointer;
     margin: 1em;
 }
 #upload_all_files {
-    padding: 0.2em 0.4em;
-    background-color: rgb(42, 42, 129);
+    padding: 0.4em 0.6em;
+    border-radius: 3px;
+    background-color: #277da1;
     color: #eee;
     display: inline-block;
     cursor: pointer;
@@ -88,16 +96,16 @@ body {
     visibility: visible;
 }
 .danger {
-    background-color: #cc5544;
+    background-color: #f94144;
 }
 .success {
-    background-color: #55cc44
+    background-color: #90be6d
 }
 .warning {
-    background-color: #ddcc55;
+    background-color: #f8961e;
 }
 .info {
-    background-color: #2b8ee6;
+    background-color: #277da1;
 }
 .img-expanded {
     max-width: 600px;

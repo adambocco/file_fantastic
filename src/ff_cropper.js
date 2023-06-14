@@ -30,7 +30,7 @@ FileFantastic.prototype.initCropper = function(params) {
 FileFantastic.prototype.createOpenCropperButton = function(fileId) {
     const openCropperButton = document.createElement('div');
     openCropperButton.id = 'ff-open-cropper-button-' + fileId;
-    openCropperButton.classList.add('ff-open-cropper-button');
+    openCropperButton.classList.add('ff-control-button', 'ff-open-cropper-button');
     openCropperButton.appendChild(this.getIcon('crop'));
     openCropperButton.addEventListener('click', ev => {
         const img = document.getElementById('ff-img-' + fileId);

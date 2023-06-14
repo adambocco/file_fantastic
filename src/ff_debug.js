@@ -1,9 +1,9 @@
 FileFantastic.prototype.initDebug = function(params) {
     this.debug = true;
     if (params.container) {
-        this.container = params.container.constructor === String ? document.getElementById(params.container) : params.container;
+        this.debugContainer = params.container.constructor === String ? document.getElementById(params.container) : params.container;
     } else {
-        this.container = this.createDebugContainer();
+        this.debugContainer = this.createDebugContainer();
     }
 }
 
@@ -15,7 +15,7 @@ FileFantastic.prototype.createDebugContainer = function() {
 }
 
 FileFantastic.prototype.updateDebugContainer = function() {
-    const container = this.container;
+    const container = this.debugContainer;
     if (!container) {
         return;
     }
@@ -199,33 +199,32 @@ FileFantastic.prototype.updateDebugContainer = function() {
     })
     container.append(this.createDebugLi(removePayloadButton, debugRemoveContainer));
 
+    const savePayloadButton = document.createElement('button');
+    savePayloadButton.type = 'button';
+    savePayloadButton.append(document.createTextNode(this.payloadType === 'json' ? 'JSON Save Payload' : 'Form Data Save Payload'));
 
-    const dualPayloadButton = document.createElement('button');
-    dualPayloadButton.type = 'button';
-    dualPayloadButton.append(document.createTextNode(this.payloadType === 'json' ? 'JSON Dual Payload' : 'Form Data Dual Payload'));
-
-    const debugDualContainer = document.createElement('div');
-    dualPayloadButton.addEventListener('click', () => {
-        if (debugDualContainer.firstChild) {
-            while (debugDualContainer.firstChild) {
-                debugDualContainer.firstChild.remove();
+    const debugSaveContainer = document.createElement('div');
+    savePayloadButton.addEventListener('click', () => {
+        if (debugSaveContainer.firstChild) {
+            while (debugSaveContainer.firstChild) {
+                debugSaveContainer.firstChild.remove();
             }
         } else {
             const filesToUpload = this.getFilesToUpload();
             if (filesToUpload.length === 0 && this.removedFiles.length === 0) {
-                debugDualContainer.append('No Dual Payload Data');
+                debugSaveContainer.append('No Save Payload Data');
             } else {
-                let payload = this.getDualPayload();
+                let payload = this.getSavePayload();
                 if (this.payloadType === 'formData') {
                     payload = this.formDataToJson(payload);
                 }
                 const payloadLabel = document.createElement('h4');
-                payloadLabel.append('Dual Payload');
-                debugDualContainer.append(payloadLabel, this.createDebugUl(payload));
+                payloadLabel.append('Save Payload');
+                debugSaveContainer.append(payloadLabel, this.createDebugUl(payload));
             }
         }
     })
-    container.append(this.createDebugLi(dualPayloadButton, debugDualContainer));
+    container.append(this.createDebugLi(savePayloadButton, debugSaveContainer));
 }
 
 FileFantastic.prototype.createDebugLi = function(key, value) {

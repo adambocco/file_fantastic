@@ -1,14 +1,12 @@
 # File Fantastic
 
-File Fantastic is a simple client-side file management library for the web. 
+File Fantastic is a simple client-side file management library for the web. The core of this library is written in vanilla JS and has no dependencies. Plugins may have dependencies and will be mentioned in [plugins](#plugins) section such. 
 
-The core of this library is written in vanilla JS and has no dependencies. However, the cropper plugin uses Cropper.js. 
-
-This library can provide a lightweight file management framework for some of the following use cases:
-- Uploading files with the ability to modify, copy, replace, and remove them.
-- Multiple file uploader instances that can be granularly configured for usage in complex forms such as in a CMS.
-- Manage subset of a file system and view many files using `Paging` and `Directories` plugin.
-- File syncing client and server when handling multiple files being modified, added, and removed.
+This library can provide a lightweight file management framework for the following use cases:
+- Uploading files with the ability to view, download, modify, copy, replace, and remove them.
+- Use multiple file uploader instances that can be highly configured for usage in complex forms such as in a CMS.
+- Easily view and manage a directory with many files and nested directories using the `Paging` and `Directories` plugins.
+- Seamlessly handle file syncing between client and server when handling multiple files being modified, added, and removed.
 
 # Features
 
@@ -185,17 +183,17 @@ This library can provide a lightweight file management framework for some of the
   
 ## **uploadUrl**  
 **Type:** `String`  
-**Default:** `''`  
+**Default:** `'/'`  
 **Usage:** URL used for `upload()` request.  
   
 ## **removeUrl**  
 **Type:** `String`  
-**Default:** `''`  
+**Default:** `'/'`  
 **Usage:** URL used for `remove()` request.  
 
 ## **saveUrl**  
 **Type:** `String`  
-**Default:** `''`  
+**Default:** `'/'`  
 **Usage:** URL used for `save()` request.  
 
 # Callbacks  
@@ -308,36 +306,36 @@ Events fired by File Fantastic behave the same as standard events. Each event is
 
 ## **upload**  
 **Arguments:**  
-- `fileIds` - The fileId(s) of files to upload. Null will select all files. 
+- `ids` - The id(s) of files to upload. Null will select all files. 
   - Type: `null | String | String[]`
   - Default: `null`
 - `triggerEvent` - If false and there are no files to upload, `noFilesToUpload` event will not be triggered
   - Type: `Boolean`
   - Default: `true`
-- `forceAll` - If false, files are checked if they are already uploaded and unmodified (in sync with the server). If true, all files in `fileIds` will be uploaded regardless.
+- `forceAll` - If false, files are checked if they are already uploaded and unmodified (in sync with the server). If true, all files in `ids` will be uploaded regardless.
   - Type: `Boolean`
   - Default: `false`  
+- `handleResponse` - If false, the upload response will not be handled.
+  - Type: `Boolean`
+  - Default: `true`
 
-**Returns:** Array of promises, each resolving to `[response, fileIds]` where `response` is the JSON response from the request to `uploadUrl`, and `fileIds` is a single file ID or array of file IDs (depending on `this.uploadIndividually`). Promises may reject on XHR error or parsing JSON.     
+**Returns:** Array of promises, each resolving to `[response, ids]` where `response` is the JSON response from the request to `uploadUrl`, and `ids` is a single file ID or array of file IDs (depending on `this.uploadIndividually`). Promises may reject on XHR error or parsing JSON.     
 **Usage:** Make POST request to `uploadUrl` with new and modified files.
 
 ## **getUploadPayload**  
 **Arguments:**  
-- `fileIds` - The fileId(s) of files to upload. Null will select all files. 
+- `ids` - The id(s) of files to upload. Null will select all files. 
   - Type: `null | String | String[]`
   - Default: `null`  
-- `addData` - If false, file meta data such as `fileId`, `name`, and `existingUrl` will not be added to the returned payload  
+- `addData` - If false, file meta data such as `id`, `name`, and `existingUrl` will not be added to the returned payload  
   - Type: `Boolean`
   - Default: `true`
 - `addFiles` - If false, the actual file data (form data file or base64 string) will not be added to the returned payload.  
   - Type: `Boolean`
   - Default: `true`
-- `forceAll` - If false, files are checked if they are already uploaded and unmodified (in sync with the server). If true, all files in `fileIds` will be uploaded regardless.
+- `forceAll` - If false, files are checked if they are already uploaded and unmodified (in sync with the server). If true, all files in `ids` will be uploaded regardless.
   - Type: `Boolean`
   - Default: `false`
-- `handleResponse` - If false, the upload response will not be handled.
-  - Type: `Boolean`
-  - Default: `true`
 
 **Returns:** `FormData | Object`  
 **Usage:** Get payload for uploading files. 
@@ -348,7 +346,7 @@ Events fired by File Fantastic behave the same as standard events. Each event is
   **Single:**
   ```  
   {  
-      fileId (String): unique file ID to map response to file,
+      id (String): unique file ID to map response to file,
       name (String): file name,  
       size (Number): file size in bytes,  
       type (String): file Mime type,  
@@ -361,7 +359,7 @@ Events fired by File Fantastic behave the same as standard events. Each event is
   Example:
   ```
   {
-      "fileId": "abc123",
+      "id": "abc123",
       "name": "test.png",
       "size": 13376,
       "type": "image/png",
@@ -377,7 +375,7 @@ Events fired by File Fantastic behave the same as standard events. Each event is
   ```
   [
       {
-          fileId (String): unique file ID to map response to file,
+          id (String): unique file ID to map response to file,
           name (String): file name,
           size (Number): file size in bytes,
           type (String): file Mime type,
@@ -392,7 +390,7 @@ Events fired by File Fantastic behave the same as standard events. Each event is
   ```
   [
       {
-          "fileId": "abc123",
+          "id": "abc123",
           "name": "test.png",
           "size": 13376,
           "type": "image/png",
@@ -408,147 +406,167 @@ Events fired by File Fantastic behave the same as standard events. Each event is
   **Form Data:**
   **Single**
   ```
-    $_POST:
-        fileId (String) = File ID to map response to file,
-        name (String) = File name,
-        size (Number) = File size in bytes,
-        type (String) = File Mime type,
-        existingUrl (Array) = Associative array included if file is existing,
-        fileModified (Number) = Whether or not the file was modified (1 or 0) 
+  $_POST:
+      id (String) = File ID to map response to file,
+      name (String) = File name,
+      size (Number) = File size in bytes,
+      type (String) = File Mime type,
+      existingUrl (Array) = Associative array included if file is existing,
+      fileModified (Number) = Whether or not the file was modified (1 or 0) 
 
-    $_FILES[this.id]:
-        files (Array) = PHP File
+  $_FILES[this.id]:
+      files (Array) = PHP File
   ```
 
   ```
-  $_FILES = Array
-  (
-      [ff_files] => Array
-          (
-              [name] => "test.png"
-              [type] => "image/png"
-              [tmp_name] => "/tmp/def456"
-              [error] => 0
-              [size] => 2849
-          )
-  )
+  $_FILES = [
+      [ff_files] => [
+          [name] => "test.png"
+          [type] => "image/png"
+          [tmp_name] => "/tmp/def456"
+          [error] => 0
+          [size] => 2849
+      ]
+  ]
 
-  $_POST = Array
-  (
-      [fileId] => "abc123",
+  $_POST = [
+      [id] => "abc123",
       [name] => "test.png"
       [size] => 2849
       [type] => "image/png"
-      [existingUrl] => Array
-          (
-              [url] => "/examples/uploads/test.png"
-          )
+      [existingUrl] => [
+          [url] => "/examples/uploads/test.png"
+      ]
       [fileModified] => 1
-)
+]
   ```
 
   **Multiple:**
   
   ```
-    $_POST: Array of files data
-        <file index>[fileId] (String) = File ID to map response to file,
-        <file index>[name] (String) = File name,
-        <file index>[size] (Number) = File size in bytes,
-        <file index>[type] (String) = File Mime type, 
-        <file index>[existingUrl] (Array) = Associative array included if file is existing,
-        <file index>[fileModified] (Number) = Whether or not the file was modified (1 or 0) 
+$_POST: Array of files data
+    <file index>[id] (String) = File ID to map response to file,
+    <file index>[name] (String) = File name,
+    <file index>[size] (Number) = File size in bytes,
+    <file index>[type] (String) = File Mime type, 
+    <file index>[existingUrl] (Array) = Associative array included if file is existing,
+    <file index>[fileModified] (Number) = Whether or not the file was modified (1 or 0) 
 
-    $_FILES[this.id]:
-        files (Array) = Array of PHP files attributes (see `examples/php/server.php:rearrangeFiles()` for a way to convert this to an array of files)
+$_FILES[this.id]:
+    files (Array) = Array of PHP files attributes (see `examples/php/server.php:rearrangeFiles()` for a way to convert this to an array of files)
   ```
 
   Example:
 
   ```
-  $_FILES = Array
-  (
-      [ff_files] => Array
-          (
-              [name] => Array
-                  (
-                      [0] => "test1.png"
-                      [1] => "test2.jpg"
-                  )
+  $_FILES = [
+      [ff_files] => [
+          [name] => [
+              [0] => "test1.png"
+              [1] => "test2.jpg"
+          ],
+          [type] => [
+              [0] => "image/png"
+              [1] => "image/jpeg"
+          ],
+          [tmp_name] => [
+              [0] => "/tmp/phpw9f0vV"
+              [1] => "/tmp/phpMfulHU"
+          ],
+          [error] => [
+              [0] => 0
+              [1] => 0
+          ],
+          [size] => [
+              [0] => 1735917
+              [1] => 1761533
+          ]
+      ]
+  ]
 
-              [type] => Array
-                  (
-                      [0] => "image/png"
-                      [1] => "image/jpeg"
-                  )
-
-              [tmp_name] => Array
-                  (
-                      [0] => "/tmp/phpw9f0vV"
-                      [1] => "/tmp/phpMfulHU"
-                  )
-
-              [error] => Array
-                  (
-                      [0] => 0
-                      [1] => 0
-                  )
-
-              [size] => Array
-                  (
-                      [0] => 1735917
-                      [1] => 1761533
-                  )
-          )
-  )
-
-  $_POST = Array
-  (
-      [0] => Array
-          (
-              [name] => "test1.png"
-              [type] => "image/png"
-              [tmp_name] => "/tmp/phpw9f0vV"
-              [error] => 0
-              [size] => 1735917
-          )
-
-      [1] => Array
-          (
-              [name] => "test2.jpg"
-              [type] => "image/jpeg"
-              [tmp_name] => "/tmp/phpMfulHU"
-              [error] => 0
-              [size] => 1761533
-          )
-
-  )
+  $_POST = [
+      [0] => [
+          [name] => "test1.png"
+          [type] => "image/png"
+          [tmp_name] => "/tmp/phpw9f0vV"
+          [error] => 0
+          [size] => 1735917
+      ],
+      [1] => [
+          [name] => "test2.jpg"
+          [type] => "image/jpeg"
+          [tmp_name] => "/tmp/phpMfulHU"
+          [error] => 0
+          [size] => 1761533
+      ]
+  ]
   ```
+
+### **Response Structure:**  
+ **Single:**
+  ```  
+  {  
+      url (String): existing URL resource for successfully uploaded file
+  }
+  OR
+  url (String): existing URL resource for successfully uploaded file
+  ```  
+
+  Example:
+  ```
+  {
+      "url": "/examples/uploads/test.png"
+  }
+  OR
+  "/examples/uploads/test.png"
+  ```
+
+  **Multiple**:  
+  ```
+  [
+      {
+          id (String): unique file ID to map response to successfully uploaded file,
+          url (String): existing URL resource for successfully uploaded file
+      }
+  ]
+  ```
+
+  Example:
+  ```
+  [
+      {
+          "id": "abc123",
+          "url": "/examples/uploads/test.png"
+      }
+  ]
+  ```
+
 
 ## **remove**  
 **Arguments:**
-- `fileIds` - The fileId(s) of files to remove. Null will select all files. 
+- `ids` - The id(s) of files to remove. Null will select all files. 
   - Type: `null | String | String[]`
   - Default: `null`
-- `forceAll` - If false, only files in `this.removedFiles` will be removed regardless of fileIds passed.
-  - Type: `Boolean`
-  - Default: `false`
 - `softRemove` - If false, a request to `removeUrl` will be made, otherwise, files will be added to `this.removedFiles`.
   - Type: `Boolean`
   - Default: `false`
 - `triggerEvent` - If false and there are no files to upload, `noFilesToRemove` event will not be triggered
   - Type: `Boolean`
   - Default: `true`
+- `forceAll` - If false, only files in `this.removedFiles` will be removed regardless of ids passed.
+  - Type: `Boolean`
+  - Default: `false`
 - `handleResponse` - If false, the remove response will not be handled.
   - Type: `Boolean`
   - Default: `true`
 
-**Returns:** Array of promises, each resolving to `[response, fileIds]` where `response` is the JSON response from the request to `removeUrl`, and `fileIds` is a single file ID or array of file IDs (depending on `this.removeIndividually`). Promises may reject on XHR error or parsing JSON. Promises will be empty if `softRemove` as no request is made.    
+**Returns:** Array of promises, each resolving to `[response, ids]` where `response` is the JSON response from the request to `removeUrl`, and `ids` is a single file ID or array of file IDs (depending on `this.removeIndividually`). Promises may reject on XHR error or parsing JSON. Promises will be empty if `softRemove` as no request is made.    
 **Usage:** Remove files and make POST request to `removeUrl` if `!softRemove`.
 
   
 ## **getRemovePayload**  
 **Arguments:**  
-- `fileIds` - The fileId(s) of files to upload. Null will select all files. 
+- `ids` - The id(s) of files to upload. Null will select all files. 
   - Type: `null | String | String[]`
   - Default: `null`  
 - `forceAll` - If false, files are checked if they are in `this.removedFiles` (added to by `remove` with `softRemove`). If true, all selected files will be added.
@@ -559,13 +577,11 @@ Events fired by File Fantastic behave the same as standard events. Each event is
 **Usage:** Get payload for removal of files.  
 
   **Payload Structure**  
-  
   **JSON:**  
-
   **Single:**
   ```  
   {  
-      fileId (String): File ID to map response to file,
+      id (String): File ID to map response to file,
       url (String): Existing URL,  
       name (String): File name,  
       ...rest of `existingUrl`  
@@ -575,7 +591,7 @@ Events fired by File Fantastic behave the same as standard events. Each event is
   Example:
   ```
   {
-      "fileId": "abc123",
+      "id": "abc123",
       "url": "/examples/uploads/test.png",
       "name": "test.png",
       "size": 13376
@@ -586,7 +602,7 @@ Events fired by File Fantastic behave the same as standard events. Each event is
   ```
   [
       {
-          fileId (String): File ID to map response to file,
+          id (String): File ID to map response to file,
           url (String): Existing URL,  
           name (String): File name, 
           ...rest of `existingUrl`  
@@ -598,7 +614,7 @@ Events fired by File Fantastic behave the same as standard events. Each event is
   ```
   [
       {
-          "fileId": "abc123",
+          "id": "abc123",
           "url": "/examples/uploads/IMG2383.jpg",
           "name": "IMG2383.jpg",
           "size": 13376
@@ -610,55 +626,72 @@ Events fired by File Fantastic behave the same as standard events. Each event is
 
   **Single:**
   ```  
-      url (Number): file size in bytes,  
-      name (String): file name,  
-      type (String): file Mime type,   
+  $_POST:
+    url (Number): file size in bytes,  
+    name (String): file name,  
+    type (String): file Mime type,   
   ```  
 
   Example:
   ```
-  $_POST: Array
-  (
+  $_POST: [
       [url] => "/examples/uploads/test.jpg"
       [name] => "test.png"
       [size] => 13376
-  )
+  ]
   ```
 
   **Multiple**:  
   ```
-      <removed index>[url]: "/examples/uploads/test.png",
-      <removed index>[name]: file name
+  $_POST:
+    <removed index>[url]: "/examples/uploads/test.png",
+    <removed index>[name]: file name
   ```
 
   Example:
   ```
-  $_POST: Array
-  (
-      [0] => Array
-          (
-              [url] => "/examples/uploads/test.png",
-              [name] => "test.png",
-              [size] => 13376
-          )
-  )
+  $_POST: [
+      [0] => [
+          [url] => "/examples/uploads/test.png",
+          [name] => "test.png",
+          [size] => 13376
+      ]
+  ]
   ```
+  **Response Structure**  
+  **Single:**
+  ```  
+  [  
+      id (String): file ID to map response to successfully removed file
+  ]
+
+  OR
+
+  id (String): file ID to map response to successfully removed file
+  ```  
+  **Multiple:**
+  ```
+  [  
+      id (String): file ID to map response to successfully removed file
+  ]
+  ```
+
 
 ## **save**  
 **Arguments:**
-- `fileIds` - The fileId(s) of files to save. Null will select all files. 
+- `ids` - The id(s) of files to save. Null will select all files. 
   - Type: `null | String | String[]`
   - Default: `null`
 
 **Returns:** Nothing  
-**Usage:** Make save request dynamically depending on `removeIndividually` and `uploadIndividually`. If both are false, `this.getDualPayload` is used to combine both upload and remove payloads into one request.
+**Usage:** Make save request dynamically depending on `removeIndividually` and `uploadIndividually`. If both are false, `this.getSavePayload` is used to combine both upload and remove payloads into one request.
   
-## **getDualPayload**  
+## **getSavePayload**  
 **Arguments:**  
-- `uploadFileIds` - The fileId(s) of files to upload. Null will select all files. 
+- `uploadFileIds` - The id(s) of files to upload. Null will select all files. 
   - Type: `null | String | String[]`
   - Default: `null`
-- `removeFileIds` - The fileId(s) of files to remove. Null will select all files. 
+- `removeFileIds` - The id(s) of files to remove. Null will select all files. 
   - Type: `null | String | String[]`
   - Default: `null`  
 - `forceAll` - If false, files are checked if they need to be uploaded (new or modified) and if they need to be removed (they are in `this.removedFiles` added to by `remove`). If true, all selected files will be added.
@@ -668,8 +701,7 @@ Events fired by File Fantastic behave the same as standard events. Each event is
 **Returns:** `Form Data | Object`  
 **Usage:** This method combines upload and remove requests and returns a single payload for save request.
 
-  **Payload Structure**  
-  
+  **Payload Structure:**  
   **JSON:**  
 
   ```
@@ -684,7 +716,7 @@ Events fired by File Fantastic behave the same as standard events. Each event is
   {
       "files": [
           {
-              "fileId": "abc123",
+              "id": "abc123",
               "name": "test.png",
               "size": 3337,
               "type": "image/png",
@@ -693,7 +725,7 @@ Events fired by File Fantastic behave the same as standard events. Each event is
       ],
       "removedFiles": [
           {
-              "fileId": "abc123",
+              "id": "abc123",
               "url": "/examples/uploads/test.png",
               "name": "test.png",
               "size": 3443
@@ -705,71 +737,56 @@ Events fired by File Fantastic behave the same as standard events. Each event is
   **Form Data:**  
 
   ```
-      files<file index>[fileId] (String) = file ID to map non-individual response to correct file,
-      files<file index>[name] (String) = file name,
-      files<file index>[size] (Number) = file size in bytes,
-      files<file index>[type] (String) = file Mime type,
-      files<this.id>[file index] (File) = file (this will be parsed out to $_FILES in php),
-      removedFiles[<removed index>][url]: existing URL,
-      removedFiles[<removed index>][name]: file name
+  $_POST:
+    files<file index>[id] (String) = file ID to map non-individual response to correct file,
+    files<file index>[name] (String) = file name,
+    files<file index>[size] (Number) = file size in bytes,
+    files<file index>[type] (String) = file Mime type,
+    files<this.id>[file index] (File) = file (this will be parsed out to $_FILES in php),
+    removedFiles[<removed index>][url]: existing URL,
+    removedFiles[<removed index>][name]: file name
   ```
 
   Example:
   ```
-  $_POST = Array
-  (
-      [files] => Array
-          (
-              [0] => Array
-                  (
-                      [fileId] => abc123
-                      [name] => test.png
-                      [size] => 3337
-                      [type] => image/png
-                  )
-          )
-      [removedFiles] => Array
-          (
-              [0] => Array
-                  (
-                      [fileId] => abc123
-                      [url] => "/examples/uploads/test.png"
-                      [name] => "test.png"
-                      [size] => 3443
-                  )
-          )
-  )
+  $_POST = [
+      [files] => [
+          [0] => [
+              [id] => "abc123"
+              [name] => "test.png"
+              [size] => 3337
+              [type] => "image/png"
+          ]
+      ],
+      [removedFiles] => [
+          [0] => [
+              [id] => "abc123"
+              [url] => "/examples/uploads/test.png"
+              [name] => "test.png"
+              [size] => 3443
+          ]
+      ]
+  ]
 
-  $_FILES = Array
-  (
-      [ff_files] => Array
-          (
-              [name] => Array
-                  (
-                      [0] => test.png
-                  )
-
-              [type] => Array
-                  (
-                      [0] => image/png
-                  )
-
-              [tmp_name] => Array
-                  (
-                      [0] => /tmp/php6DXW3T
-                  )
-
-              [error] => Array
-                  (
-                      [0] => 0
-                  )
-
-              [size] => Array
-                  (
-                      [0] => 3337
-                  )
-          )
-  )
+  $_FILES = [
+      [ff_files] => [
+          [name] => [
+              [0] => "test.png"
+          ],
+          [type] => [
+              [0] => "image/png"
+          ],
+          [tmp_name] => [
+              [0] => "/tmp/php6DXW3T"
+          ],
+          [error] => [
+              [0] => 0
+          ],
+          [size] => [
+              [0] => 3337
+          ]
+      ]
+  ]
   ```
 
 # Plugins
@@ -777,18 +794,17 @@ Events fired by File Fantastic behave the same as standard events. Each event is
 **Usage:** Add parameters as object on parameters configuration object.  
 
 Example using `Paging` and `Cropper`:  
-
 ```
-    ff = new FileFantastic({
-        multiple: true,
-        cropper: {
-            saveOnCrop: true,
-        },
-        paging: {
-            perPage: 5,
-            hideDisplayWhenSinglePage: false,
-        }
-    })
+ff = new FileFantastic({
+    multiple: true,
+    cropper: {
+        saveOnCrop: true,
+    },
+    paging: {
+        perPage: 5,
+        hideDisplayWhenSinglePage: false,
+    }
+})
 ```
 
 ## Paging
@@ -808,7 +824,95 @@ Example using `Paging` and `Cropper`:
     - Default: `true`
 
 ## Directories
-- Coming soon
+- Parameters:
+  - **directory** Current directory
+    - Type: `String`
+    - Default: `/`
+  - **directories** Child directories in current directory
+    - Type: `Array`
+    - Default: `[]`
+  - **container** Container element or ID of container that holds directory navigator.
+    - Type:** `String | HTMLElement`  
+    - Default:** `HTMLElement`  
+  - **changeDirectoryUrl** URL used for `changeDirectory()` request.
+    - Type: `String`
+    - Default: `/` 
+  - **creatable** Create directory name input and button appears in directory navigator.
+    - Type: `Boolean`
+    - Default: `true`
+  - **createDirectoryUrl** URL used for `createDirectory()` request.
+    - Type: `String`
+    - Default: `/`
+  - **removable** Remove directory buttons appears in directory navigator and/or directory toolbar.  
+    - Type: `Boolean`
+    - Default: `true`
+  - **removeDirectoryUrl** URL used for `removeDirectory()` request.
+    - Type: `String`
+    - Default: `/`
+  - **displayDirectories** Show directories as items with files.
+    - Type: `Boolean`
+    - Default: `true`
+- Methods:
+  - **changeDirectory** Travel to a child or parent directory.
+    - Arguments:
+      - `directory` Absolute directory path  
+        Type: `String` 
+    - Returns: 
+      - Nothing
+  - **getChangeDirectoryPayload**
+    - **Payload Structure:**
+      **JSON**
+      ```  
+      {
+          directory (String): absolute directory path
+      }
+      ```  
+      **Form Data**
+      ```  
+      $_POST:
+          directory (String): absolute directory path
+      ``` 
+
+  - **createDirectory** Create a new directory in the current directory.
+    - Arguments:
+      - `directory` Absolute directory path  
+        Type: `String` 
+    - Returns: 
+      - Nothing
+  - **getCreateDirectoryPayload**
+    - **Payload Structure:**  
+      **JSON**
+      ```  
+      {
+          directory (String): absolute directory path
+      }
+      ```  
+      **Form Data**
+      ```  
+      $_POST:
+          directory (String): absolute directory path
+      ``` 
+
+  - **removeDirectory** Remove a child in current directory.
+    - Arguments:
+      - `directory` Absolute directory path  
+        Type: `String` 
+    - Returns: 
+      - Nothing
+  - **getRemoveDirectoryPayload()**
+    - **Payload Structure:**  
+      **JSON**
+      ```  
+      {
+          directory (String): absolute directory path
+      }
+      ```  
+      **Form Data**
+      ```  
+      $_POST:
+          directory (String): absolute directory path
+      ``` 
+
 
 ## Debug
 - Provides tools for viewing and modifying configuration options, request payloads, and other attributes on the instance and its files.
@@ -854,7 +958,7 @@ Example using `Paging` and `Cropper`:
 
 # Notes
 
-- Remove requests will be made before upload requests on save if possible. If `uploadIndividually` and `removeIndividually` are both false, a dual payload will be used. In this case, if you are modifying existing files, it is important to always handle file removals before uploads.
+- Remove requests will be made before upload requests on save if possible. If `uploadIndividually` and `removeIndividually` are both false, a save payload will be used. In this case, if you are modifying existing files, it is important to always handle file removals before uploads.
 
 - File uploads may fail due to configurations in your `php.ini` file:
   - Run `php --ini` or check `phpinfo()` for the path to your `php.ini` file: `Loaded Configuration File`.
@@ -862,5 +966,5 @@ Example using `Paging` and `Cropper`:
   - `max_file_uploads` is the maximum number of files that can be uploaded.
   - `post_max_size` is the maximum size of the entire request, including files.
   ```
-    sed -i 's/upload_max_filesize = .*/upload_max_filesize = '<NEW MAX FILE SIZE>'/' <PATH TO PHP.INI>
+  sed -i 's/upload_max_filesize = .*/upload_max_filesize = '<NEW MAX FILE SIZE>'/' <PATH TO PHP.INI>
   ```

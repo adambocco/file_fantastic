@@ -3,11 +3,9 @@ FileFantastic.prototype.initPaging = function(params) {
     this.perPage = params.perPage || 10;
     this.hidePagingWhenSinglePage = params.hidePagingWhenSinglePage === undefined ? false : params.hidePagingWhenSinglePage;
     this.page = 1;
-    this.pagingContainer = params.pagingContainer || this.createPagingContainer();
-    if (params.pagingContainer) {
+    this.pagingContainer = params.container === undefined ? document.createElement('div') : params.container;
+    if (params.container) {
         this.pagingContainer = this.pagingContainer.constructor === String ? document.getElementById(this.pagingContainer) : this.pagingCoontainer;
-    } else {
-        this.displayContainer.insertAdjacentElement('afterend', this.pagingContainer);
     }
     this.showPageInput = params.showPageInput === undefined ? true : !!params.showPageInput;
     this.pageButtonsLeft = 3;
@@ -16,7 +14,8 @@ FileFantastic.prototype.initPaging = function(params) {
 }
 
 FileFantastic.prototype.getPageButtons = function() {
-    const totalPages = Math.ceil(this.files.length / this.perPage);
+    const entities = this.getEntities()
+    const totalPages = Math.ceil(entities.length / this.perPage);
 
     let prevEllipsis = false;
     let prevButtons = [];
@@ -84,8 +83,10 @@ FileFantastic.prototype.createPagingContainer = function() {
 };
 
 FileFantastic.prototype.pageLeftCallback = function() {
-    this.page > 0 && this.page--;
-    this.update();
+    if (this.page > 0) {
+        this.page--;
+        this.update();
+    }
 }
 
 FileFantastic.prototype.createPageLeftButton = function() {
@@ -94,13 +95,16 @@ FileFantastic.prototype.createPageLeftButton = function() {
     leftButton.classList.add('ff-paging-button', 'ff-paging-left');
     leftButton.id = 'ff-paging-left-' + this.id;
     leftButton.addEventListener('click', ev => {this.pageLeftCallback()});
-    leftButton.append(this.getIcon('leftChevron', false));
+    leftButton.append(this.getIcon('leftChevron', true));
     return leftButton;
 }
 
 FileFantastic.prototype.pageRightCallback = function() {
-    const maxPage = Math.ceil(this.files.length / this.perPage);
-    maxPage > this.page && this.page++;
+    const entities = this.getEntities();
+    const maxPage = Math.ceil(entities.length / this.perPage);
+    if (maxPage > this.page) {
+        this.page++;
+    }
     this.update();
 }
 
@@ -110,7 +114,7 @@ FileFantastic.prototype.createPageRightButton = function() {
     rightButton.classList.add('ff-paging-button', 'ff-paging-right');
     rightButton.id = 'ff-paging-right-' + this.id;
     rightButton.addEventListener('click', ev => {this.pageRightCallback()})
-    rightButton.append(this.getIcon('rightChevron', false));
+    rightButton.append(this.getIcon('rightChevron', true));
     return rightButton;
 }
 
@@ -119,7 +123,6 @@ FileFantastic.prototype.createPageInput = function() {
     input.type = 'text';
     input.classList.add('ff-page-input');
     input.id = 'ff-page-input-' + this.id;
-    input.style.width = Math.max(10, 6*Math.ceil(this.files.length / this.perPage)) + 'px';
     input.value = this.page;
 
     input.addEventListener('keyup', ev => {
@@ -136,7 +139,8 @@ FileFantastic.prototype.createPageInput = function() {
 }
 
 FileFantastic.prototype.goToPage = function(page) {
-    const totalPages = Math.ceil(this.files.length / this.perPage);
+    const entities = this.getEntities();
+    const totalPages = Math.ceil(entities.length / this.perPage);
     const pageInt = Math.floor(page);
     if (pageInt > 0 && pageInt <= totalPages) {
         this.page = pageInt;
@@ -147,37 +151,36 @@ FileFantastic.prototype.goToPage = function(page) {
     }
 }
 
-FileFantastic.prototype.getCurrentPageFiles = function() {
-    if (!this.paging) { return this.files; }
-    const currentPageFiles = [];
-    for (let fileIndex in this.files) {
-        const filePage = Math.floor(fileIndex / this.perPage) + 1;
-        if (this.page === filePage) {
-            currentPageFiles.push(this.files[fileIndex]);
+FileFantastic.prototype.getCurrentPage = function() {
+    const entities = this.getEntities();
+    const currentPageEntities = [];
+    for (let index in entities) {
+        const entityPage = Math.floor(index / this.perPage) + 1;
+        if (this.page === entityPage) {
+            currentPageEntities.push(entities[index]);
         }
     }
-    return currentPageFiles;
+    return currentPageEntities;
 }
 
-FileFantastic.prototype.pageDisplayCallback = function() {
-    const totalPages = Math.ceil(this.files.length / this.perPage);
+FileFantastic.prototype.updatePagingContainer = function() {
+    const entities = this.getEntities();
+    const totalPages = Math.ceil(entities.length / this.perPage);
     const pageButtons = this.getPageButtons();
 
-    while (this.pagingContainer.firstChild) {
-        this.pagingContainer.removeChild(this.pagingContainer.firstChild);
-    }
+    container = this.createPagingContainer();
 
     if (this.hidePagingWhenSinglePage && totalPages === 1) {
         return;
     }
     if (this.page > 1) {
-        this.pagingContainer.insertBefore(this.createPageLeftButton(), this.pagingContainer.firstChild);
+        container.append(this.createPageLeftButton());
     }
     
-    this.pagingContainer.append(...pageButtons[0]);
+    container.append(...pageButtons[0]);
 
     const currentPageDisplay = this.createCurrentPageDisplay();
-    this.pagingContainer.append(currentPageDisplay);
+    container.append(currentPageDisplay);
 
     const pageNumberDisplay = document.createElement('span');
     currentPageDisplay.append('Page ');
@@ -191,16 +194,20 @@ FileFantastic.prototype.pageDisplayCallback = function() {
     }
     currentPageDisplay.append(pageNumberDisplay);
     const pageRangeDisplay = document.createElement('div');
-    let pageHigh = Math.min(this.perPage*this.page, this.files.length);
+    let pageHigh = Math.min(this.perPage*this.page, entities.length);
     let pageLow = pageHigh > 0 ? ((this.perPage*(this.page-1))+1) : 0;
-    pageRangeDisplay.append('Viewing ' + pageLow + '-' + pageHigh + ' of ' + (this.files.length));
+    pageRangeDisplay.append('Viewing ' + pageLow + '-' + pageHigh + ' of ' + (entities.length));
     currentPageDisplay.append(pageRangeDisplay)
     
-    this.pagingContainer.append(...pageButtons[1]);
+    container.append(...pageButtons[1]);
     
     if (this.page < totalPages) {
-        this.pagingContainer.append(this.createPageRightButton());
+        container.append(this.createPageRightButton());
     }
+    while (this.pagingContainer.firstChild) {
+        this.pagingContainer.removeChild(this.pagingContainer.firstChild);
+    }
+    this.pagingContainer.append(container)
 }
 
 FileFantastic.prototype.createCurrentPageDisplay = function() {
@@ -210,8 +217,8 @@ FileFantastic.prototype.createCurrentPageDisplay = function() {
     return div;
 }
 
-FileFantastic.prototype.getPageByFileId = function(fileId) {
-    const fileIds = this.files.map(f => f.fileId);
-    const fileIndex = fileIds.indexOf(fileId);
-    return Math.floor(fileIndex / this.perPage) + 1;
+FileFantastic.prototype.getPageByEntityId = function(id) {
+    const ids = this.getEntities().map(f => f.id);
+    const index = ids.indexOf(id);
+    return Math.floor(index / this.perPage) + 1;
 }
