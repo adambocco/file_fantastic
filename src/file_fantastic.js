@@ -684,7 +684,7 @@ FileFantastic.prototype.displayCallback = function (id) {
     let entity = this.getFileById(id) || this.getDirectoryById(id);
     
     if (entity.previewable && !entity.existingUrl?.url && !entity.objectUrl && entity.file) {
-        entity.objectUrl = this.blobToObjectUrl(file.file);
+        entity.objectUrl = this.blobToObjectUrl(entity.file);
     }
 
     if (!entity.container) {
@@ -767,7 +767,7 @@ FileFantastic.prototype.upload = function (ids = null, triggerEvent = true, forc
     const uploadFileIds = uploadFiles.map(f => f.id);
     this.loadingCallback(true);
 
-    if (this.uploadIndivily) {
+    if (this.uploadIndividually) {
         const totalSize = uploadFiles.reduce((size, file) => size + file.size, 0);
         const totalIndex = uploadFiles.length;
         let runningSize = 0;
@@ -873,42 +873,47 @@ FileFantastic.prototype.handleSaveResponse = function (response, uploadFileIds =
 
 
     if (failedRemovedFiles.length > 0) {
+        const failedRemovedFilesHtml = this.commaSeparatedList(failedRemovedFiles.map(f => this.directories ? (this.directory + f.name) : f.name));
         this.handleEvent(
             'fileRemoveFailed',
             { response: response, files: failedRemovedFiles },
-            `Failed to remove ${failedRemovedFiles.length} file${failedRemovedFiles.length === 1 ? '' : 's'}:<br>${this.commaSeparatedList(failedRemovedFiles.map(f => f.existingUrl.url))}`,
+            `Failed to remove ${failedRemovedFiles.length} file${failedRemovedFiles.length === 1 ? '' : 's'}:<br>${failedRemovedFilesHtml}`,
             'danger'
         );
     }
     if (removedFiles.length > 0) {
+        const removedFilesHtml = this.commaSeparatedList(removedFiles.map(f => this.directories ? (this.directory + f.name) : f.name));
         this.handleEvent(
             'filesRemoved',
             { response: response, files: removedFiles },
-            `Successfully removed ${removedFiles.length} file${removedFiles.length === 1 ? '' : 's'}:<br>${this.commaSeparatedList(removedFiles.map(f => f.existingUrl.url))}`,
+            `Successfully removed ${removedFiles.length} file${removedFiles.length === 1 ? '' : 's'}:<br>${removedFilesHtml}`,
             'success'
         );
     }
     if (failedUploadedFiles.length > 0) {
+        const failedUploadedFilesHtml = this.commaSeparatedList(failedUploadedFiles.map(f => this.directories ? (this.directory + f.name) : f.name));
         this.handleEvent(
             'fileUploadFailed',
             { response: response, files: failedUploadedFiles },
-            `Failed to upload ${failedUploadedFiles.length} file${failedUploadedFiles.length === 1 ? '' : 's'}:<br>${this.commaSeparatedList(failedUploadedFiles.map(f => f.name))}.`,
+            `Failed to upload ${failedUploadedFiles.length} file${failedUploadedFiles.length === 1 ? '' : 's'}:<br>${failedUploadedFilesHtml}.`,
             'danger'
         );
     }
     if (uploadedFiles.length > 0) {
+        const uploadedFilesHtml = this.commaSeparatedList(uploadedFiles.map(f => this.directories ? (this.directory + f.name) : f.name));
         this.handleEvent(
             'filesUploaded',
             { response: response, files: uploadedFiles },
-            `Successfully uploaded ${uploadedFiles.length} file${uploadedFiles.length === 1 ? '' : 's'}:<br>${this.commaSeparatedList(uploadedFiles.map(f => f.name))}`,
+            `Successfully uploaded ${uploadedFiles.length} file${uploadedFiles.length === 1 ? '' : 's'}:<br>${uploadedFilesHtml}`,
             'success'
         );
     }
     if (replacedFiles.length > 0) {
+        const replacedFilesHtml = this.commaSeparatedList(replacedFiles.map(f => this.directories ? (this.directory + f.name) : f.name));
         this.handleEvent(
             'filesReplaced',
             { response: response, replacedFiles: replacedFiles },
-            `Successfully replaced ${replacedFiles.length} file${replacedFiles.length === 1 ? '' : 's'}:<br>${this.commaSeparatedList(replacedFiles.map(f => f.name))}`,
+            `Successfully replaced ${replacedFiles.length} file${replacedFiles.length === 1 ? '' : 's'}:<br>${replacedFilesHtml}`,
             'success'
         );
     }
@@ -1230,7 +1235,6 @@ FileFantastic.prototype.getFilesToRemove = function (removeFileIds, forceAll = f
 }
 
 FileFantastic.prototype.handleRemoveResponse = function (response, removeFileIds, replaceFileIds=[]) {
-    console.log("Remove response: ", response)
     response = response?.constructor === Array ? response : [response];
     response = response.flat(1);
     removeFileIds = removeFileIds.constructor === Array ? removeFileIds : [removeFileIds];
@@ -1283,7 +1287,7 @@ FileFantastic.prototype.createDropify = function () {
 FileFantastic.prototype.cleanFilename = function (filename, uniqueCounter = 0) {
     const extension = filename.substring(filename.lastIndexOf('.') + 1).toLowerCase();
     let name = filename.substr(0, filename.lastIndexOf('.'));
-    name = name.replaceAll(/\s/g, '-').replaceAll(/[^A-Za-z0-9\-\.\(\)]/g, '');
+    name = name.replaceAll(/\s/g, '-').replaceAll(/[^A-Za-z0-9\-\_\.\(\)]/g, '');
     let newName = name + '.' + extension;
 
     for (let file of this.files) {

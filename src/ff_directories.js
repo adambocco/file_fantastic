@@ -278,7 +278,6 @@ FileFantastic.prototype.createDirectoryNavigator = function () {
 
     const parents = this.getParentDirectories();
     let parentPath = '/';
-    console.log(parents)
     for (let i = 0; i < parents.length; i++) {
         const parent = parents[i];
 
@@ -334,6 +333,7 @@ FileFantastic.prototype.createDirectoryNavigator = function () {
             childrenContainer.append(removeButton);
         }
     }
-    container.append(parentsContainer, childrenContainer);
+    parentsContainer.append(childrenContainer)
+    container.append(parentsContainer);
     return container;
 }

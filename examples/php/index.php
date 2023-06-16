@@ -19,7 +19,7 @@ $filePath = $_SERVER['DOCUMENT_ROOT'] . $clientRoot . 'examples/uploads';
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.1/css/all.min.css" integrity="sha512-MV7K8+y+gLIBoVD59lQIYicR65iaqukzvf/nwasF0nqhPay5w/9lJmVM2hMDcnK1OnMGCdVK+iQrJ7lzPJQd1w==" crossorigin="anonymous" referrerpolicy="no-referrer" />
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Work+Sans:wght@100;400&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@100;400&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <title>File Fantastic</title>
 </head>
@@ -73,7 +73,7 @@ $filePath = $_SERVER['DOCUMENT_ROOT'] . $clientRoot . 'examples/uploads';
                 const childDirectories = JSON.parse("<?php echo addslashes(json_encode($childDirectories)); ?>")
 
                 ff = new FileFantastic({
-                    previewable: false,
+                    previewable: true,
                     payloadType: 'formData',
                     iconType: 'fa',
                     includeIconText: false,
@@ -81,8 +81,8 @@ $filePath = $_SERVER['DOCUMENT_ROOT'] . $clientRoot . 'examples/uploads';
                     existingUrls: existingUrls,
                     maxFileSize: 1024*1024*1000,
                     uploadType: 'formData',
-                    saveOnInput: false,
-                    uploadIndividually: false,
+                    saveOnInput: true,
+                    uploadIndividually: true,
                     removeIndividually: true,
                     removeOnClick: true,
                     displayContainer: 'file_display',
@@ -132,7 +132,7 @@ $filePath = $_SERVER['DOCUMENT_ROOT'] . $clientRoot . 'examples/uploads';
             })
 
             function uploadAllFiles() { ff.upload(); }
-            function removeAllFiles() { ff.remove(null, true); }
+            function removeAllFiles() { ff.remove(null, false, true, true); }
             function saveFiles() { ff.save(); }
 
             function handleLoadingBars(files, totalFiles, size, totalSize) {

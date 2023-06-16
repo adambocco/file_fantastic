@@ -1,17 +1,20 @@
 body {
-    font-family: 'Work Sans', sans-serif;
+    font-family: 'Roboto', sans-serif;
+}
+.container {
+    max-width: 960px;
 }
 #navigation {
     display: flex;
     justify-content: space-between;
+    flex-wrap: wrap;
 }
 #file_display {
     display: flex;
-    flex-direction: column;
+    flex-direction: row;
     flex-wrap: wrap;
 }
 #file_paging {
-    margin-left: auto;
     display: flex;
 }
 #save_files {
@@ -83,6 +86,7 @@ body {
     bottom: 1em;
     right: 1em;
     z-index: 3;
+    word-wrap: break-word;
 }
 .toast {
     visibility: hidden;
@@ -90,7 +94,7 @@ body {
     text-align: center;
     padding: 0.2em 0.4em;
     z-index: 10;
-    margin: 0.4em;
+    margin: 0.3em auto;
 }
 .toast.show {
     visibility: visible;
@@ -108,8 +112,15 @@ body {
     background-color: #277da1;
 }
 .img-expanded {
-    max-width: 600px;
-    max-height: 600px;
+    max-width: 85%;
+    max-height: 85%;
+    position: relative;
+    z-index: 2;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    margin-right: -50%;
+    transform: translate(-50%, -50%);
 }
 @-webkit-keyframes fadein {
     from {

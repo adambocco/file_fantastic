@@ -11,8 +11,8 @@
     display: block;
     margin:auto;
     border: 1px solid #eee;
-    max-width: 400px;
-    max-height: 400px;
+    max-width: 300px;
+    max-height: 300px;
 }
 
 .ff-file-preview-container.ff-img-preview-container {
@@ -71,7 +71,7 @@ div#ff-open-cropper-button-23j73b {}
     display: inline-block;
     padding: 0.6em;
     font-size: 12px;
-    max-width: 250px;
+    max-width: 300px;
 }
 
 .ff-filename-preview-container {
@@ -82,9 +82,10 @@ div#ff-open-cropper-button-23j73b {}
     display: flex;
     align-items: center;
     text-align: left;
-    padding: 0.2em 0.6em;
+    padding: 0.2em 0.6em 0 0.6em;
     font-size: 14px;
-    max-width: 400px;
+    max-width: 300px;
+    overflow-wrap: anywhere;
     margin: 0.2em 0.2em 0 0.2em;
 }
 
@@ -150,17 +151,19 @@ div#ff-open-cropper-button-23j73b {}
 }
 
 .ff-file-container {
-    margin: 0.2em 1em;
+    margin: 0.2em 0.6em;
     display: flex;
     height:fit-content;
-    width: 400px;
+    background-color: #eee;
+    width: 300px;
+    border-radius: 5px;
 }
 
 .ff-directory-container {
     margin: 0.2em 1em;
     display: flex;
     height:fit-content;
-    width: 400px;
+    width: 300px;
     flex-grow: 1;
 }
 
@@ -173,6 +176,7 @@ div#ff-open-cropper-button-23j73b {}
     display: flex;
     flex-grow: 1;
     justify-content: left;
+    border-radius: 5px;
 }
 
 .cropper-container {
@@ -182,6 +186,8 @@ div#ff-open-cropper-button-23j73b {}
 .ff-file-control-container, .ff-directory-control-container {
     background-color: #eee;
     display: flex;
+    padding: 0.2em;
+    border-radius: 5px;
 }
 
 .ff-icon {
@@ -287,9 +293,10 @@ div#ff-open-cropper-button-23j73b {}
     border-radius: 5px;
     text-align: center;
     cursor: pointer;
-    width: 400px;
     margin:1em;
+    padding: 0.4em;
     height: 150px;
+    max-width: 350px;
     justify-content: center;
     align-items: center;
     display: flex;
@@ -352,7 +359,7 @@ div#ff-open-cropper-button-23j73b {}
 
 .ff-directory-navigator-container {
     display: flex;
-    align-items: center;;
+    align-items: center;
     width: fit-content;
 }
 
@@ -374,6 +381,7 @@ div#ff-open-cropper-button-23j73b {}
 .ff-directory-parents-container {
     display: flex;
     align-items: center;
+    flex-wrap: wrap;
 }
 .ff-parent-directory {
     border-radius: 3px;
@@ -381,6 +389,7 @@ div#ff-open-cropper-button-23j73b {}
     background-color: #277da1;
     color: #eee;
     cursor: pointer;
+    margin: 0.2em;
 }
 .ff-create-directory-container {
     display: inline-flex;
@@ -389,10 +398,10 @@ div#ff-open-cropper-button-23j73b {}
 }
 .ff-create-directory-name-input {
     border-radius: 5px;
-    padding: 0.6em;
+    padding: 0.4em;
 }
 .ff-directory-select {
     border-radius: 5px;
-    padding: 0.6em;
+    padding: 0.45em;
     height: min-content;
 }
