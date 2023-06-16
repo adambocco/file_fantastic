@@ -91,7 +91,8 @@ function handleUpload($filesData, $files) {
             if (!is_dir($fileDirectory . $file['directory'])) {
                 continue;
             }
-            $filePath = $fileDirectory . $file['directory'] . '/' . $name;
+            $filePath = $fileDirectory . ($file['directory'] === '/' ? '' : $file['directory']) . '/' . $name;
+            $clientPath = $clientDirectory . ($file['directory'] === '/' ? '' : $file['directory']) . '/' . urlencode($name);
         }
 
         if ($payloadType === 'json' && !empty($file['dataUrl'])) {

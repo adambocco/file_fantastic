@@ -873,7 +873,7 @@ FileFantastic.prototype.handleSaveResponse = function (response, uploadFileIds =
 
 
     if (failedRemovedFiles.length > 0) {
-        const failedRemovedFilesHtml = this.commaSeparatedList(failedRemovedFiles.map(f => this.directories ? (this.directory + f.name) : f.name));
+        const failedRemovedFilesHtml = this.commaSeparatedList(failedRemovedFiles.map(f => this.directories ? (this.directory + (this.directory === '/' ? '' : '/') + f.name) : f.name));
         this.handleEvent(
             'fileRemoveFailed',
             { response: response, files: failedRemovedFiles },
@@ -882,7 +882,7 @@ FileFantastic.prototype.handleSaveResponse = function (response, uploadFileIds =
         );
     }
     if (removedFiles.length > 0) {
-        const removedFilesHtml = this.commaSeparatedList(removedFiles.map(f => this.directories ? (this.directory + f.name) : f.name));
+        const removedFilesHtml = this.commaSeparatedList(removedFiles.map(f => this.directories ? (this.directory + (this.directory === '/' ? '' : '/') + f.name) : f.name));
         this.handleEvent(
             'filesRemoved',
             { response: response, files: removedFiles },
@@ -891,7 +891,7 @@ FileFantastic.prototype.handleSaveResponse = function (response, uploadFileIds =
         );
     }
     if (failedUploadedFiles.length > 0) {
-        const failedUploadedFilesHtml = this.commaSeparatedList(failedUploadedFiles.map(f => this.directories ? (this.directory + f.name) : f.name));
+        const failedUploadedFilesHtml = this.commaSeparatedList(failedUploadedFiles.map(f => this.directories ? (this.directory + (this.directory === '/' ? '' : '/') + f.name) : f.name));
         this.handleEvent(
             'fileUploadFailed',
             { response: response, files: failedUploadedFiles },
@@ -900,7 +900,7 @@ FileFantastic.prototype.handleSaveResponse = function (response, uploadFileIds =
         );
     }
     if (uploadedFiles.length > 0) {
-        const uploadedFilesHtml = this.commaSeparatedList(uploadedFiles.map(f => this.directories ? (this.directory + f.name) : f.name));
+        const uploadedFilesHtml = this.commaSeparatedList(uploadedFiles.map(f => this.directories ? (this.directory + (this.directory === '/' ? '' : '/') + f.name) : f.name));
         this.handleEvent(
             'filesUploaded',
             { response: response, files: uploadedFiles },
@@ -909,7 +909,7 @@ FileFantastic.prototype.handleSaveResponse = function (response, uploadFileIds =
         );
     }
     if (replacedFiles.length > 0) {
-        const replacedFilesHtml = this.commaSeparatedList(replacedFiles.map(f => this.directories ? (this.directory + f.name) : f.name));
+        const replacedFilesHtml = this.commaSeparatedList(replacedFiles.map(f => this.directories ? (this.directory + (this.directory === '/' ? '' : '/') + f.name) : f.name));
         this.handleEvent(
             'filesReplaced',
             { response: response, replacedFiles: replacedFiles },
@@ -1397,7 +1397,6 @@ FileFantastic.prototype.fileInputCallback = function () {
     const filesFailedToInput = filesWrongType.concat(filesWrongExt).concat(filesTooLarge).concat(filesTooMany);
 
     if (filesFailedToInput.length > 0) {
-
         let message = [];
         if (filesWrongExt.length > 0) {
             message.push(`The file${filesWrongExt.length > 1 ? 's' : ''} ${this.commaSeparatedList(filesWrongExt.map(f => f.name))} could not be uploaded because only the extensions ${this.commaSeparatedList(this.acceptedExtensions.join)} are allowed.`);
@@ -1412,8 +1411,7 @@ FileFantastic.prototype.fileInputCallback = function () {
             message.push(`The file${filesTooLarge.length > 1 ? 's' : ''} ${this.commaSeparatedList(filesTooLarge.map(f => f.name))} could not be uploaded because they exceed the maximum file size of ${this.fileSizeToHumanReadable(this.maxFileSize)}.`);
         }
         this.handleEvent(
-            'fileInputFailed',
-            {
+            'fileInputFailed', {
                 files: filesFailedToInput,
                 filesWrongType: filesWrongType,
                 filesWrongExt: filesWrongExt,
