@@ -13,6 +13,7 @@ body {
     display: flex;
     flex-direction: row;
     flex-wrap: wrap;
+    margin: 0.4em;
 }
 #file_paging {
     display: flex;

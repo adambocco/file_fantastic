@@ -160,11 +160,12 @@ div#ff-open-cropper-button-23j73b {}
 }
 
 .ff-directory-container {
-    margin: 0.2em 1em;
+    margin: 0.2em 0.6em;
     display: flex;
     height:fit-content;
     width: 300px;
-    flex-grow: 1;
+    background-color: #eee;
+    border-radius: 5px;
 }
 
 .ff-img-container, .ff-audio-container, .ff-video-container {
@@ -372,7 +373,7 @@ div#ff-open-cropper-button-23j73b {}
     font-weight: 500;
     border-radius: 3px;
     padding: 0.2em 0.4em;
-    background-color: #eee;
+    background-color: #fff;
 }
 .ff-directory-children-container {
     display: inline-flex;

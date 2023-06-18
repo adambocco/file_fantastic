@@ -16,6 +16,7 @@ FileFantastic.prototype.initDirectories = function (params) {
 
     this.displayDirectories = params.displayDirectories === undefined ? false : params.displayDirectories;
     this.showNavigatorChildren = params.showNavigatorChildren === undefined ? true : params.showNavigatorChildren;
+    this.hideFilesOutOfDirectory = params.hideFilesOutOfDirectory === undefined ? true : params.hideFilesOutOfDirectory;
 }
 
 FileFantastic.prototype.getDirectoryById = function (id) {
@@ -89,6 +90,7 @@ FileFantastic.prototype.createDirectoryNamePreview = function (id) {
 FileFantastic.prototype.createDirectoryContainer = function (id) {
     const container = document.createElement('div');
     container.classList.add('ff-directory-container', 'ff-directory-container-' + this.id);
+    container.dataset.directory = this.directory;
     container.id = 'ff-directory-container-' + id;
     container.dataset.id = id;
     return container;

@@ -852,6 +852,12 @@ ff = new FileFantastic({
   - **displayDirectories** Show directories as items with files.
     - Type: `Boolean`
     - Default: `true`
+  - **showNavigatorChildren** Show directories as select in directory navigator.
+    - Type: `Boolean`
+    - Default: `true`
+  - **hideFilesOutOfDirectory** Set CSS display property to `none` if not visible. If false, children are removed and re-loaded when changing directory.
+    - Type: `Boolean`
+    - Default: `true`
 - Methods:
   - **changeDirectory** Travel to a child or parent directory.
     - Arguments:

@@ -14,73 +14,66 @@ $files = empty($files[$ffId]) ? $files : $files[$ffId];
 if (!empty($_GET['save'])) {
     $response = array();
     if (isset($post['removedFiles'])) {
-        $response['removeResponse'] = handleRemove($post['removedFiles']);
+        $response['removeResponse'] = handleRemoveFiles($post['removedFiles']);
     }
     if (isset($post['files'])) {
-        $response['uploadResponse'] = handleUpload($post['files'], $files);
+        $response['uploadResponse'] = handleUploadFiles($post['files'], $files);
     }
     die(json_encode($response));
 }
 
 $single = empty($post[0]);
 if (!empty($_GET['remove'])) {
-    $removeResponse = handleRemove($single ? array($post) : $post);
+    $removeResponse = handleRemoveFiles($single ? array($post) : $post);
     die(json_encode($single && !empty($removeResponse[0]) ? $removeResponse[0] : $removeResponse));
 }
 if (!empty($_GET['upload'])) {
-    $uploadResponse = handleUpload($single ? array($post) : $post , $files);
+    $uploadResponse = handleUploadFiles($single ? array($post) : $post , $files);
     die(json_encode($single && !empty($uploadResponse[0]) ? $uploadResponse[0] : $uploadResponse));
 }
 
-if (!empty($_GET['cd'])) {
-    if (!empty($_POST['directory'])) {
-        $destinationDir = '/' . trim($_POST['directory'], '/ ');
-        $absoluteFileDir = $fileDirectory . $destinationDir;
-        $absoluteClientDir = $clientDirectory . $destinationDir;
-        if (is_dir($absoluteFileDir)) {
-            $allFilesAndFolders = array_diff(scandir($absoluteFileDir), array('..', '.'));
-            $existingUrls = array();
-            $childDirectories = array();
-            foreach ($allFilesAndFolders as $f) {
-                if (is_dir($absoluteFileDir . '/' . $f)){
-                    $childDirectories[] = ($destinationDir === '/' ? '' : $destinationDir) . '/' . $f;
-                } else {
-                    $url = $absoluteClientDir . '/' . urlencode($f);
-                    $existingUrls[] = array('url' => $url, 'directory' => $destinationDir);
-                }
+if (!empty($_GET['cd']) && !empty($_POST['directory'])) {
+    $destinationDir = $_POST['directory'] === '/' ? '' : $_POST['directory'];
+    $absoluteFileDir = $fileDirectory . $destinationDir;
+    $absoluteClientDir = $clientDirectory . $destinationDir;
+    if (is_dir($absoluteFileDir)) {
+        $allFilesAndFolders = array_diff(scandir($absoluteFileDir), array('..', '.'));
+        $existingUrls = array();
+        $childDirectories = array();
+        foreach ($allFilesAndFolders as $f) {
+            if (is_dir($absoluteFileDir . '/' . $f)){
+                $childDirectories[] = $destinationDir . '/' . $f;
+            } else {
+                $url = $absoluteClientDir . '/' . urlencode($f);
+                $existingUrls[] = array('url' => $url);
             }
-            die(json_encode(array('existingUrls' => $existingUrls, 'directories' => $childDirectories)));
         }
+        die(json_encode(array('existingUrls' => $existingUrls, 'directories' => $childDirectories)));
     }
 }
 
-if (!empty($_GET['mkdir'])) {
-    if (!empty($_POST['directory'])) {
-        $directory = '/' . trim($_POST['directory'], '/ ');
-        $absoluteFileDir = $fileDirectory . $directory;
-        $absoluteClientDir = $clientDirectory . $directory;
-        if (!is_dir($absoluteFileDir)) {
-            mkdir($absoluteFileDir);
+if (!empty($_GET['mkdir']) && !empty($_POST['directory'])) {
+    $directory = '/' . trim($_POST['directory'], '/ ');
+    $absoluteFileDir = $fileDirectory . $directory;
+    $absoluteClientDir = $clientDirectory . $directory;
+    if (!is_dir($absoluteFileDir)) {
+        mkdir($absoluteFileDir);
+        die(json_encode(array('directory' => $directory)));
+    }
+}
+
+if (!empty($_GET['rmdir']) && !empty($_POST['directory'])) {
+    $directory = '/' . trim($_POST['directory'], '/ ');
+    $absoluteFileDir = $fileDirectory . $directory;
+    $absoluteClientDir = $clientDirectory . $directory;
+    if (is_dir($absoluteFileDir)) {
+        if (rmdir($absoluteFileDir)) {
             die(json_encode(array('directory' => $directory)));
         }
     }
 }
 
-if (!empty($_GET['rmdir'])) {
-    if (!empty($_POST['directory'])) {
-        $directory = '/' . trim($_POST['directory'], '/ ');
-        $absoluteFileDir = $fileDirectory . $directory;
-        $absoluteClientDir = $clientDirectory . $directory;
-        if (is_dir($absoluteFileDir)) {
-            if (rmdir($absoluteFileDir)) {
-                die(json_encode(array('directory' => $directory)));
-            }
-        }
-        die($absoluteFileDir);
-    }
-}
-
-function handleUpload($filesData, $files) {
+function handleUploadFiles($filesData, $files) {
     global $clientDirectory, $fileDirectory, $payloadType;
     foreach ($filesData as $file) {
         $name = $file['name'];
@@ -110,7 +103,7 @@ function handleUpload($filesData, $files) {
     return $response;
 }
 
-function handleRemove($existingUrls) {
+function handleRemoveFiles($existingUrls) {
     global $fileDirectory;
     $response = array();
     foreach ($existingUrls as $existingUrl) {

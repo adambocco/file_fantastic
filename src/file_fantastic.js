@@ -414,6 +414,10 @@ FileFantastic.prototype.update = function () {
     }
     let displayContainers = document.querySelectorAll(displaySelector);
     for (let displayContainer of displayContainers) {
+        if (this.directories && displayContainer.dataset.directory !== this.directory) {
+            this.toggleDisplayed(displayContainer, false);
+            continue;
+        }
         const id = displayContainer.dataset.id;
         if (!this.getFileById(id) && !this.getDirectoryById(id)) {
             displayContainer.remove();
@@ -730,6 +734,9 @@ FileFantastic.prototype.createFileContainer = function (id) {
     const file = this.getFileById(id);
     const container = document.createElement('div');
     container.classList.add('ff-file-container', 'ff-file-container-' + this.id);
+    if (this.directory) {
+        container.dataset.directory = this.directory;
+    }
     this.previewImages && this.acceptedImagePreviewTypes.includes(file.type) && container.classList.add('ff-img-container');
     this.previewAudio && this.acceptedAudioPreviewTypes.includes(file.type) && container.classList.add('ff-audio-container');
     this.previewVideo && this.acceptedVideoPreviewTypes.includes(file.type) && container.classList.add('ff-video-container');
@@ -877,7 +884,7 @@ FileFantastic.prototype.handleSaveResponse = function (response, uploadFileIds =
         this.handleEvent(
             'fileRemoveFailed',
             { response: response, files: failedRemovedFiles },
-            `Failed to remove ${failedRemovedFiles.length} file${failedRemovedFiles.length === 1 ? '' : 's'}:<br>${failedRemovedFilesHtml}`,
+            `Failed to remove ${failedRemovedFiles.length === 1 ? '' : failedRemovedFiles.length} file${failedRemovedFiles.length === 1 ? '' : 's'}:<br>${failedRemovedFilesHtml}`,
             'danger'
         );
     }
@@ -886,7 +893,7 @@ FileFantastic.prototype.handleSaveResponse = function (response, uploadFileIds =
         this.handleEvent(
             'filesRemoved',
             { response: response, files: removedFiles },
-            `Successfully removed ${removedFiles.length} file${removedFiles.length === 1 ? '' : 's'}:<br>${removedFilesHtml}`,
+            `Successfully removed ${removedFiles.length === 1 ? '' : removedFiles.length} file${removedFiles.length === 1 ? '' : 's'}:<br>${removedFilesHtml}`,
             'success'
         );
     }
@@ -895,7 +902,7 @@ FileFantastic.prototype.handleSaveResponse = function (response, uploadFileIds =
         this.handleEvent(
             'fileUploadFailed',
             { response: response, files: failedUploadedFiles },
-            `Failed to upload ${failedUploadedFiles.length} file${failedUploadedFiles.length === 1 ? '' : 's'}:<br>${failedUploadedFilesHtml}.`,
+            `Failed to upload ${failedUploadedFiles.length === 1 ? '' : failedUploadedFiles.length} file${failedUploadedFiles.length === 1 ? '' : 's'}:<br>${failedUploadedFilesHtml}.`,
             'danger'
         );
     }
@@ -904,7 +911,7 @@ FileFantastic.prototype.handleSaveResponse = function (response, uploadFileIds =
         this.handleEvent(
             'filesUploaded',
             { response: response, files: uploadedFiles },
-            `Successfully uploaded ${uploadedFiles.length} file${uploadedFiles.length === 1 ? '' : 's'}:<br>${uploadedFilesHtml}`,
+            `Successfully uploaded ${uploadedFiles.length === 1 ? '' : uploadedFiles.length} file${uploadedFiles.length === 1 ? '' : 's'}:<br>${uploadedFilesHtml}`,
             'success'
         );
     }
@@ -913,7 +920,7 @@ FileFantastic.prototype.handleSaveResponse = function (response, uploadFileIds =
         this.handleEvent(
             'filesReplaced',
             { response: response, replacedFiles: replacedFiles },
-            `Successfully replaced ${replacedFiles.length} file${replacedFiles.length === 1 ? '' : 's'}:<br>${replacedFilesHtml}`,
+            `Successfully replaced ${replacedFiles.length === 1 ? '' : replacedFiles.length} file${replacedFiles.length === 1 ? '' : 's'}:<br>${replacedFilesHtml}`,
             'success'
         );
     }
