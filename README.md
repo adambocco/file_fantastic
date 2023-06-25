@@ -19,6 +19,7 @@ This library can provide a lightweight file management framework for the followi
 - Plugins:
   - Paging
   - Directories
+  - Search
   - Cropper
 
 ## Table of Contents
@@ -823,6 +824,19 @@ ff = new FileFantastic({
     - Type: `Boolean`
     - Default: `true`
 
+## Search
+- Search through files in current directory
+- Parameters:
+  - **searchCallback** Function to filter files/directories displayed
+    - Type: `Function(Object:file | directory, String:searchString)` returns `Boolean`
+    - Default: Filter by case-insensitive substring existence on `name` property.
+  - **searchOnInput** Show search results dropdown on input.
+    - Type: `Boolean`
+    - Default: `true`
+  - **filterOnInput** Filter files and directories on page on input. 
+    - Type: `Boolean`
+    - Default: `true`
+
 ## Directories
 - Parameters:
   - **directory** Current directory
@@ -855,9 +869,7 @@ ff = new FileFantastic({
   - **showNavigatorChildren** Show directories as select in directory navigator.
     - Type: `Boolean`
     - Default: `true`
-  - **hideFilesOutOfDirectory** Set CSS display property to `none` if not visible. If false, children are removed and re-loaded when changing directory.
-    - Type: `Boolean`
-    - Default: `true`
+
 - Methods:
   - **changeDirectory** Travel to a child or parent directory.
     - Arguments:

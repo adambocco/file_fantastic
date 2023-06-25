@@ -164,7 +164,7 @@ FileFantastic.prototype.getCurrentPage = function() {
 }
 
 FileFantastic.prototype.updatePagingContainer = function() {
-    const entities = this.getEntities();
+    const [entities, unfilteredEntitiesLength] = this.getEntities(true);
     const totalPages = Math.ceil(entities.length / this.perPage);
     const pageButtons = this.getPageButtons();
 
@@ -197,6 +197,11 @@ FileFantastic.prototype.updatePagingContainer = function() {
     let pageHigh = Math.min(this.perPage*this.page, entities.length);
     let pageLow = pageHigh > 0 ? ((this.perPage*(this.page-1))+1) : 0;
     pageRangeDisplay.append('Viewing ' + pageLow + '-' + pageHigh + ' of ' + (entities.length));
+    if (this.search) {
+        if (unfilteredEntitiesLength !== entities.length) {
+            pageRangeDisplay.append(document.createElement('br'), 'Filtered from ' + unfilteredEntitiesLength);
+        }
+    }
     currentPageDisplay.append(pageRangeDisplay)
     
     container.append(...pageButtons[1]);

@@ -28,6 +28,7 @@ $filePath = $_SERVER['DOCUMENT_ROOT'] . $clientRoot . 'examples/uploads';
     <script src="<?php echo $clientRoot; ?>src/ff_paging.js"></script>
     <script src="<?php echo $clientRoot; ?>src/ff_cropper.js"></script>
     <script src="<?php echo $clientRoot; ?>src/ff_directories.js"></script>
+    <script src="<?php echo $clientRoot; ?>src/ff_search.js"></script>
     <script src="<?php echo $clientRoot; ?>src/ff_debug.js"></script>
     <body>
         <div id="loading-overlay">
@@ -37,6 +38,7 @@ $filePath = $_SERVER['DOCUMENT_ROOT'] . $clientRoot . 'examples/uploads';
             <h1>File Fantastic</h1>
             <div id="navigation">
                 <div id="directories"></div>
+                <div id="file_search"></div>
                 <div id="file_paging"></div>
             </div>
             <div id="file_uploader">
@@ -105,9 +107,13 @@ $filePath = $_SERVER['DOCUMENT_ROOT'] . $clientRoot . 'examples/uploads';
                         uploadOnCrop: true
                     },
                     paging: {
-                        perPage: 30,
+                        perPage: 8,
                         container: 'file_paging',
                         hideDisplayWhenSinglePage: false,
+                    },
+                    search: {
+                        container: 'file_search',
+                        searchUrl: '<?php echo $clientRoot; ?>examples/php/server.php?search=1',
                     },
                     // debug: {
                     //     container: 'debug_container',
@@ -170,15 +176,20 @@ $filePath = $_SERVER['DOCUMENT_ROOT'] . $clientRoot . 'examples/uploads';
                 return 0;
             }
 
-            function expandImage(img) {
-                let imgExpanded = Array.from(img.classList).includes('img-expanded');
-                document.querySelectorAll('.img-expanded').forEach(el => { el.classList.remove('img-expanded') })
-                if (!imgExpanded) {
-                    img.classList.add('img-expanded');
-                }
-                window.onclick = ev => {
-                    ev.target !== img && img.classList.remove('img-expanded');
-                }
+            function expandImage(srcImg) {
+                const previewModal = document.createElement('div');
+                previewModal.id = 'img-modal';
+                const img = document.createElement('img');
+                img.src = srcImg.src;
+                console.log("SRCL: ", srcImg)
+                img.classList.add('img-expanded');
+                previewModal.addEventListener('click', ev => {
+                    if (ev.target !== img) {
+                        previewModal.remove();
+                    }
+                });
+                previewModal.append(img);
+                document.querySelector('body').append(previewModal);
             }
 
             function toggleLoadingScreen(state=null) {

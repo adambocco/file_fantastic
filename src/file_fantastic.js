@@ -235,6 +235,12 @@ function FileFantastic(params) {
             mi: '',
             fa: 'fa-folder-plus',
             text: 'New Folder'
+        },
+        search: {
+            mdi: '',
+            mi: '',
+            fa: 'fa-magnifying-glass',
+            text: 'Search'
         }
     };
 
@@ -344,6 +350,9 @@ function FileFantastic(params) {
     if (this.initDirectories !== undefined && params.directories && this.multiple) {
         this.initDirectories(params.directories);
     }
+    if (this.initSearch !== undefined && params.search && this.multiple) {
+        this.initSearch(params.search);
+    }
     if (this.initDebug !== undefined && params.debug) {
         this.initDebug(params.debug);
     }
@@ -379,6 +388,18 @@ FileFantastic.prototype.getFileById = function (id) {
     return this.files[i];
 }
 
+FileFantastic.prototype.getEntityByPath = function (path) {
+    const fileIndex = this.files.map(f => (f.directory || this.directory) + ((f.directory || this.directory) === '/' ? '' : '/') + f.name).indexOf(path);
+    if (fileIndex >= 0) {
+        return this.files[fileIndex];
+    }
+    if (this.directories) {
+        const dirIndex = this.directories.map(f => f.directory).indexOf(path);
+        return this.directories.indexOf(dirIndex);
+    }
+    return null;
+}
+
 FileFantastic.prototype.createInputButton = function () {
     const button = document.createElement('button');
     button.type = 'button';
@@ -396,7 +417,7 @@ FileFantastic.prototype.generateUID = function () {
     return firstPart + secondPart;
 }
 
-FileFantastic.prototype.update = function () {
+FileFantastic.prototype.update = function() {
     let entities = this.getEntities();
     if (this.paging) {
         const totalPages = Math.ceil(entities.length / this.perPage);
@@ -444,15 +465,25 @@ FileFantastic.prototype.update = function () {
     if (this.directories) {
         this.updateDirectoriesContainer();
     }
+    if (this.search) {
+        this.updateSearchContainer();
+    }
 }
 
-FileFantastic.prototype.getEntities = function (key, dark=false) {
+FileFantastic.prototype.getEntities = function (returnUnfilteredLength=false) {
     let entities = this.files;
     if (this.displayDirectories) {
         entities = entities.concat(this.directories);
     }
     if (this.sortCallback) {
         entities.sort(this.sortCallback);
+    }
+    const unfilteredLength = entities.length;
+    if (this.filterString) {
+        entities = entities.filter(e => this.searchCallback(e, this.filterString))
+    }
+    if (returnUnfilteredLength) {
+        return [entities, unfilteredLength];
     }
     return entities;
 }

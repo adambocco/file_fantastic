@@ -32,8 +32,8 @@ if (!empty($_GET['upload'])) {
     die(json_encode($single && !empty($uploadResponse[0]) ? $uploadResponse[0] : $uploadResponse));
 }
 
-if (!empty($_GET['cd']) && !empty($_POST['directory'])) {
-    $destinationDir = $_POST['directory'] === '/' ? '' : $_POST['directory'];
+if (!empty($_GET['cd']) && !empty($post['directory'])) {
+    $destinationDir = $post['directory'] === '/' ? '' : $post['directory'];
     $absoluteFileDir = $fileDirectory . $destinationDir;
     $absoluteClientDir = $clientDirectory . $destinationDir;
     if (is_dir($absoluteFileDir)) {
@@ -52,8 +52,8 @@ if (!empty($_GET['cd']) && !empty($_POST['directory'])) {
     }
 }
 
-if (!empty($_GET['mkdir']) && !empty($_POST['directory'])) {
-    $directory = '/' . trim($_POST['directory'], '/ ');
+if (!empty($_GET['mkdir']) && !empty($post['directory'])) {
+    $directory = '/' . trim($post['directory'], '/ ');
     $absoluteFileDir = $fileDirectory . $directory;
     $absoluteClientDir = $clientDirectory . $directory;
     if (!is_dir($absoluteFileDir)) {
@@ -62,8 +62,8 @@ if (!empty($_GET['mkdir']) && !empty($_POST['directory'])) {
     }
 }
 
-if (!empty($_GET['rmdir']) && !empty($_POST['directory'])) {
-    $directory = '/' . trim($_POST['directory'], '/ ');
+if (!empty($_GET['rmdir']) && !empty($post['directory'])) {
+    $directory = '/' . trim($post['directory'], '/ ');
     $absoluteFileDir = $fileDirectory . $directory;
     $absoluteClientDir = $clientDirectory . $directory;
     if (is_dir($absoluteFileDir)) {
@@ -71,6 +71,38 @@ if (!empty($_GET['rmdir']) && !empty($_POST['directory'])) {
             die(json_encode(array('directory' => $directory)));
         }
     }
+}
+
+if (!empty($_GET['search']) && !empty($post['search'])) {
+    die(json_encode(getAllFilesAndFolders('/', true, array(), empty($post['search']) ? null : $post['search'])));
+}
+
+function getAllFilesAndFolders($directory, $recursive=false, $allFilesAndFolders=array(), $search=null) {
+    global $clientDirectory, $fileDirectory;
+
+    $scandir = $directory === '/' ? $fileDirectory : ($fileDirectory . '/' . $directory);
+    foreach (array_diff(scandir($scandir), array('..', '.')) as $fileOrFolder) {
+        if (is_dir($scandir . '/' . $fileOrFolder)) {
+            $nestedDirectory = $directory . ($directory === '/' ? '' : '/') . $fileOrFolder;
+            if (is_null($search) || stripos($fileOrFolder, $search) !== false) {
+                $allFilesAndFolders[] = array(
+                    'type' => 'directory',
+                    'path' => $nestedDirectory
+                );
+            }
+            if ($recursive) {
+                $allFilesAndFolders = getAllFilesAndFolders($nestedDirectory, true, $allFilesAndFolders, $search);
+            }
+        } elseif (is_null($search) || stripos($fileOrFolder, $search) !== false) {
+            $path = ($directory === '/' ? '' : $directory) . '/' . $fileOrFolder;
+            $allFilesAndFolders[] = array(
+                'type' => 'file',
+                'url' => $clientDirectory . $path,
+                'path' => $path
+            );
+        }
+    }
+    return $allFilesAndFolders;
 }
 
 function handleUploadFiles($filesData, $files) {

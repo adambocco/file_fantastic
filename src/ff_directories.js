@@ -16,7 +16,6 @@ FileFantastic.prototype.initDirectories = function (params) {
 
     this.displayDirectories = params.displayDirectories === undefined ? false : params.displayDirectories;
     this.showNavigatorChildren = params.showNavigatorChildren === undefined ? true : params.showNavigatorChildren;
-    this.hideFilesOutOfDirectory = params.hideFilesOutOfDirectory === undefined ? true : params.hideFilesOutOfDirectory;
 }
 
 FileFantastic.prototype.getDirectoryById = function (id) {
@@ -147,8 +146,8 @@ FileFantastic.prototype.createDirectory = function (directory) {
     }
     const payload = this.getCreateDirectoryPayload(directory);
     this.doXhr(this.createDirectoryUrl, payload, this.payloadType === 'json').then(response => {
-        this.addDirectory(directory);
         if (response?.directory === directory) {
+            this.addDirectory(directory);
             this.handleEvent(
                 'createdDirectory',
                 { response: response, directory: directory },
@@ -227,7 +226,7 @@ FileFantastic.prototype.getChangeDirectoryPayload = function (directory) {
 FileFantastic.prototype.changeDirectory = function (destinationDirectory) {
     const cdPayload = this.getChangeDirectoryPayload(destinationDirectory);
     this.loadingCallback(true);
-    this.doXhr(this.changeDirectoryUrl, cdPayload, this.payloadType === 'json').then(response => {
+    return this.doXhr(this.changeDirectoryUrl, cdPayload, this.payloadType === 'json').then(response => {
         this.loadingCallback(false);
         this.directory = destinationDirectory;
         if (response?.existingUrls) {
@@ -243,6 +242,7 @@ FileFantastic.prototype.changeDirectory = function (destinationDirectory) {
         }
         this.page = 1;
         this.update();
+        return response;
     })
 }
 
